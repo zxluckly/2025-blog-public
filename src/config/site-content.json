@@ -43,8 +43,8 @@
 	"socialButtons": [
 		{
 			"id": "juejin",
-			"type": "link",
-			"value": "https://chat.ekumao.com/qq-chat/qq1/?qq=3190925010",
+			"type": "qq",
+			"value": "3190925010",
 			"label": "🐧",
 			"order": 2
 		},
@@ -54,6 +54,13 @@
 			"value": "haochenwu7@gmail.com",
 			"label": "",
 			"order": 1
+		},
+		{
+			"id": "button-1770980588570",
+			"type": "link",
+			"value": "https://chat.ekumao.com/qq-chat/qq1/?qq=3190925010",
+			"label": "QQ",
+			"order": 3
 		}
 	],
 	"clockShowSeconds": false,
