@@ -11,8 +11,16 @@ import { HomeDraggableLayer } from '../app/(home)/home-draggable-layer'
 import { Pause } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
+import staticMusicList from '../../public/music/list.json'
 
-const MUSIC_FILES = ['/music/close-to-you.mp3']
+// 音乐列表类型
+type MusicItem = {
+	name: string
+	path: string
+}
+
+// 随机选择一首歌曲作为初始歌曲
+const getRandomIndex = (length: number) => Math.floor(Math.random() * length)
 
 export default function MusicCard() {
 	const pathname = usePathname()
@@ -23,13 +31,29 @@ export default function MusicCard() {
 	const clockCardStyles = cardStyles.clockCard
 	const calendarCardStyles = cardStyles.calendarCard
 
+	const [musicList, setMusicList] = useState<MusicItem[]>(staticMusicList)
 	const [isPlaying, setIsPlaying] = useState(false)
-	const [currentIndex, setCurrentIndex] = useState(0)
+	const [currentIndex, setCurrentIndex] = useState(() => getRandomIndex(staticMusicList.length))
 	const [progress, setProgress] = useState(0)
 	const audioRef = useRef<HTMLAudioElement | null>(null)
 	const currentIndexRef = useRef(0)
 
 	const isHomePage = pathname === '/'
+
+	// 动态加载音乐列表（如果静态列表为空）
+	useEffect(() => {
+		if (staticMusicList.length === 0) {
+			fetch('/api/music')
+				.then(res => res.json())
+				.then((data: MusicItem[]) => {
+					if (data.length > 0) {
+						setMusicList(data)
+						setCurrentIndex(getRandomIndex(data.length))
+					}
+				})
+				.catch(console.error)
+		}
+	}, [])
 
 	const position = useMemo(() => {
 		// If not on home page, always position at bottom-right corner when playing
@@ -64,7 +88,8 @@ export default function MusicCard() {
 		}
 
 		const handleEnded = () => {
-			const nextIndex = (currentIndexRef.current + 1) % MUSIC_FILES.length
+			// 随机选择下一首歌曲
+			const nextIndex = getRandomIndex(musicList.length)
 			currentIndexRef.current = nextIndex
 			setCurrentIndex(nextIndex)
 			setProgress(0)
@@ -92,10 +117,10 @@ export default function MusicCard() {
 	// Handle currentIndex change - load new audio
 	useEffect(() => {
 		currentIndexRef.current = currentIndex
-		if (audioRef.current) {
+		if (audioRef.current && musicList.length > 0) {
 			const wasPlaying = !audioRef.current.paused
 			audioRef.current.pause()
-			audioRef.current.src = MUSIC_FILES[currentIndex]
+			audioRef.current.src = musicList[currentIndex].path
 			audioRef.current.loop = false
 			setProgress(0)
 
@@ -103,7 +128,7 @@ export default function MusicCard() {
 				audioRef.current.play().catch(console.error)
 			}
 		}
-	}, [currentIndex])
+	}, [currentIndex, musicList])
 
 	// Handle play/pause state change
 	useEffect(() => {
@@ -158,7 +183,7 @@ export default function MusicCard() {
 				<MusicSVG className='h-8 w-8' />
 
 				<div className='flex-1'>
-					<div className='text-secondary text-sm'>Close To You</div>
+					<div className='text-secondary text-sm'>{musicList.length > 0 ? musicList[currentIndex].name : '暂无音乐'}</div>
 
 					<div className='mt-1 h-2 rounded-full bg-white/60'>
 						<div className='bg-linear h-full rounded-full transition-all duration-300' style={{ width: `${progress}%` }} />
