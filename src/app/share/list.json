@@ -232,5 +232,16 @@
 			"3D"
 		],
 		"stars": 3
+	},
+	{
+		"name": "圆角图片生成",
+		"logo": "https://toolwa.com/image-round/favicon.png",
+		"url": "https://toolwa.com/image-round/",
+		"description": "一般的图片都是四四方方的，看的多了就会觉得非常呆板。于是就有了圆角图片。 本工具可以轻松地将任意图片转换成透明圆角图片，并且可以指定各个圆角大小，图片的大小完全不限制，生成出来的图片无锯齿。 生成的透明圆角图片可以用于 LOGO 图标，非常美观好看。",
+		"tags": [
+			"图片",
+			"工具"
+		],
+		"stars": 4
 	}
 ]
