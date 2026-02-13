@@ -57,9 +57,9 @@
 		},
 		{
 			"id": "button-1770980588570",
-			"type": "link",
-			"value": "https://chat.ekumao.com/qq-chat/qq1/?qq=3190925010",
-			"label": "QQ",
+			"type": "github",
+			"value": "https://github.com/zxluckly",
+			"label": "GitHub",
 			"order": 3
 		}
 	],
