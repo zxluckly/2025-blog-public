@@ -45,14 +45,14 @@
 			"id": "github",
 			"type": "github",
 			"value": "https://github.com/zxluckly",
-			"label": "qq",
+			"label": "GitHub",
 			"order": 3
 		},
 		{
 			"id": "juejin",
-			"type": "qq",
+			"type": "link",
 			"value": "https://chat.ekumao.com/qq-chat/qq1/?qq=3190925010",
-			"label": "稀土掘金",
+			"label": "QQ",
 			"order": 2
 		},
 		{
