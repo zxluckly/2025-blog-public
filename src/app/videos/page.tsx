@@ -85,7 +85,7 @@ export default function VideosPage() {
 												className='absolute inset-0 flex items-center justify-center bg-black/20 transition-all hover:bg-black/30'
 											>
 												<div className='flex h-16 w-16 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform group-hover:scale-110'>
-													<PlaySVG className='text-brand ml-1 h-8 w-8' />
+													<PlaySVG className='text-brand ml-5 h-4 w-8' />
 												</div>
 											</button>
 										</>
