@@ -17,6 +17,8 @@ import ShareFilledSVG from '@/svgs/share-filled.svg'
 import ShareOutlineSVG from '@/svgs/share-outline.svg'
 import WebsiteFilledSVG from '@/svgs/website-filled.svg'
 import WebsiteOutlineSVG from '@/svgs/website-outline.svg'
+import VideosFilledSVG from '@/svgs/videos-filled.svg'
+import VideosOutlineSVG from '@/svgs/videos-outline.svg'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 import { cn } from '@/lib/utils'
@@ -49,11 +51,17 @@ const list = [
 		label: '推荐分享',
 		href: '/share'
 	},
+	// {
+	// 	icon: WebsiteOutlineSVG,
+	// 	iconActive: WebsiteFilledSVG,
+	// 	label: '优秀博客',
+	// 	href: '/bloggers'
+	// },
 	{
-		icon: WebsiteOutlineSVG,
-		iconActive: WebsiteFilledSVG,
-		label: '优秀博客',
-		href: '/bloggers'
+		icon: VideosOutlineSVG,
+		iconActive: VideosFilledSVG,
+		label: '视频空间',
+		href: '/videos'
 	}
 ]
 
