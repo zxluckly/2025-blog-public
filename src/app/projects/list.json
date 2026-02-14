@@ -1,1 +1,20 @@
-[]
+[
+	{
+		"name": "慢性病风险预测系统",
+		"year": 2026,
+		"image": "blob:https://www.zxluky.asia/6c37dff0-2972-4cb9-b17f-837097d69c28",
+		"url": "",
+		"description": "本系统是一个基于机器学习的慢性病风险预测平台，面向糖尿病和高血压两种常见慢性病，通过采集用户健康数据，利用多种机器学习模型进行风险评估，输出风险等级（低/中/高）与个性化健康建议，辅助用户和医护人员进行健康管理与决策。",
+		"tags": [
+			"Django 5.1.2 + DRF",
+			"Vue 3 + Ant Design Vue 4 + Vite 6",
+			"MySQL",
+			"Redis",
+			"Pandas + NumPy",
+			"Scikit-learn + XGBoost",
+			"ECharts",
+			"Pinia"
+		],
+		"github": "https://github.com/zxluckly/disease_prediction"
+	}
+]
