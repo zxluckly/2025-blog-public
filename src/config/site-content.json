@@ -1,6 +1,6 @@
 {
 	"meta": {
-		"title": "zx_luck",
+		"title": "zx_lucky",
 		"description": "zxluckly 的个人博客，记录全栈开发、探索、笔记。更新代码仓库。",
 		"username": "ZX"
 	},
@@ -42,17 +42,10 @@
 	"currentBackgroundImageId": "",
 	"socialButtons": [
 		{
-			"id": "github",
-			"type": "github",
-			"value": "https://github.com/zxluckly",
-			"label": "Github",
-			"order": 3
-		},
-		{
 			"id": "juejin",
 			"type": "qq",
 			"value": "3190925010",
-			"label": "稀土掘金",
+			"label": "🐧",
 			"order": 2
 		},
 		{
@@ -61,6 +54,13 @@
 			"value": "haochenwu7@gmail.com",
 			"label": "",
 			"order": 1
+		},
+		{
+			"id": "button-1770980588570",
+			"type": "github",
+			"value": "https://github.com/zxluckly",
+			"label": "GitHub",
+			"order": 3
 		}
 	],
 	"clockShowSeconds": false,
