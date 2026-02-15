@@ -46,3 +46,4 @@ next-env.d.ts
 
 #vscode
 .history/
+src/svgs/videos-outline.svg
