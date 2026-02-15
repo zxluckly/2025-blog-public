@@ -298,36 +298,23 @@ export default function GuestbookPage() {
 				scale: generateRandomScale()
 			}
 
-			// 先在本地显示
+			const response = await fetch('/api/guestbook', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(newMessage)
+			})
+
+			if (!response.ok) {
+				throw new Error('提交失败')
+			}
+
 			setMessages(prev => [...prev, newMessage])
 			setContent('')
 			setIsFormOpen(false)
 			localStorage.setItem('guestbook_nickname', nickname.trim())
-
-			// 尝试提交到服务器（开发环境）或 GitHub（生产环境）
-			try {
-				const response = await fetch('/api/guestbook', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(newMessage)
-				})
-
-				if (response.ok) {
-					toast.success('留言成功！')
-				} else {
-					// API 失败，尝试使用 GitHub（需要导入密钥）
-					toast.info('正在保存到 GitHub...')
-					const { pushMessage } = await import('./services/push-message')
-					await pushMessage(newMessage)
-					toast.success('留言成功！')
-				}
-			} catch (error) {
-				console.error('Failed to submit message:', error)
-				// 即使提交失败，留言也已经在本地显示了
-				toast.warning('留言已显示，但未能保存到服务器')
-			}
+			toast.success('留言成功！')
 		} catch (error) {
-			console.error('Failed to create message:', error)
+			console.error('Failed to submit message:', error)
 			toast.error('留言失败，请稍后重试')
 		} finally {
 			setIsSubmitting(false)
