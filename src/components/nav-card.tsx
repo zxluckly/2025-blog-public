@@ -19,6 +19,8 @@ import WebsiteFilledSVG from '@/svgs/website-filled.svg'
 import WebsiteOutlineSVG from '@/svgs/website-outline.svg'
 import VideosFilledSVG from '@/svgs/videos-filled.svg'
 import VideosOutlineSVG from '@/svgs/videos-outline.svg'
+import GuestbookFilledSVG from '@/svgs/guestbook-filled.svg'
+import GuestbookOutlineSVG from '@/svgs/guestbook-outline.svg'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 import { cn } from '@/lib/utils'
@@ -62,7 +64,13 @@ const list = [
 		iconActive: VideosFilledSVG,
 		label: '视频空间',
 		href: '/videos'
-	}
+	},
+	// {
+	// 	icon: GuestbookOutlineSVG,
+	// 	iconActive: GuestbookFilledSVG,
+	// 	label: '留言板',
+	// 	href: '/guestbook'
+	// }
 ]
 
 const extraSize = 8

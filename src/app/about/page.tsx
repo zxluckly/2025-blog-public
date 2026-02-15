@@ -9,6 +9,7 @@ import { useAuthStore } from '@/hooks/use-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import LikeButton from '@/components/like-button'
 import GithubSVG from '@/svgs/github.svg'
+import GuestbookOutlineSVG from '@/svgs/guestbook-outline.svg'
 import initialData from './list.json'
 
 export default function Page() {
@@ -168,7 +169,17 @@ export default function Page() {
 					)}
 
 					<div className='mt-8 flex items-center justify-center gap-6'>
-				
+						<motion.a
+							href='/guestbook'
+							initial={{ opacity: 0, scale: 0.6 }}
+							animate={{ opacity: 1, scale: 1 }}
+							whileHover={{ scale: 1.05 }}
+							whileTap={{ scale: 0.95 }}
+							className='card static inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium transition-colors hover:bg-white/80'
+						>
+							<GuestbookOutlineSVG className='h-5 w-5' />
+							留言板
+						</motion.a>
 
 						<LikeButton slug='open-source' delay={0} />
 					</div>
