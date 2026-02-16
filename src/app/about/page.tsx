@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import LikeButton from '@/components/like-button'
 import GithubSVG from '@/svgs/github.svg'
 import GuestbookOutlineSVG from '@/svgs/guestbook-outline.svg'
+import DanmakuTags from '@/components/danmaku-tags'
 import initialData from './list.json'
 
 export default function Page() {
@@ -26,6 +27,9 @@ export default function Page() {
 	const { siteContent } = useConfigStore()
 	const { content, loading } = useMarkdownRender(data.content)
 	const hideEditButton = siteContent.hideEditButton ?? false
+
+	// 解析标签字符串为数组
+	const tagArray = data.tags ? data.tags.split(',').map(t => t.trim()).filter(Boolean) : undefined
 
 	const handleChoosePrivateKey = async (file: File) => {
 		try {
@@ -94,6 +98,8 @@ export default function Page() {
 
 	return (
 		<>
+			<DanmakuTags tags={tagArray} />
+			
 			<input
 				ref={keyInputRef}
 				type='file'
@@ -106,7 +112,7 @@ export default function Page() {
 				}}
 			/>
 
-			<div className='flex flex-col items-center justify-center px-6 pt-32 pb-12 max-sm:px-0'>
+			<div className='relative z-10 flex flex-col items-center justify-center px-6 pt-32 pb-12 max-sm:px-0'>
 				<div className='w-full max-w-[800px]'>
 					{isEditMode ? (
 						isPreviewMode ? (
@@ -140,6 +146,13 @@ export default function Page() {
 										className='w-full px-4 py-3 text-center text-lg'
 										value={data.description}
 										onChange={e => setData({ ...data, description: e.target.value })}
+									/>
+									<input
+										type='text'
+										placeholder='技术标签（用逗号分隔，如：React, TypeScript, Node.js）'
+										className='w-full px-4 py-3 text-center text-sm'
+										value={data.tags || ''}
+										onChange={e => setData({ ...data, tags: e.target.value })}
 									/>
 								</div>
 
