@@ -88,8 +88,8 @@ export default function MusicCard() {
 		}
 
 		const handleEnded = () => {
-			// 随机选择下一首歌曲
-			const nextIndex = getRandomIndex(musicList.length)
+			// 顺序播放下一首歌曲（循环列表）
+			const nextIndex = (currentIndexRef.current + 1) % musicList.length
 			currentIndexRef.current = nextIndex
 			setCurrentIndex(nextIndex)
 			setProgress(0)
@@ -112,23 +112,27 @@ export default function MusicCard() {
 			audio.removeEventListener('ended', handleEnded)
 			audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
 		}
-	}, [])
+	}, [musicList])
 
 	// Handle currentIndex change - load new audio
 	useEffect(() => {
-		currentIndexRef.current = currentIndex
-		if (audioRef.current && musicList.length > 0) {
-			const wasPlaying = !audioRef.current.paused
-			audioRef.current.pause()
-			audioRef.current.src = musicList[currentIndex].path
-			audioRef.current.loop = false
-			setProgress(0)
-
-			if (wasPlaying) {
-				audioRef.current.play().catch(console.error)
-			}
-		}
-	}, [currentIndex, musicList])
+	    currentIndexRef.current = currentIndex
+	    if (audioRef.current && musicList.length > 0) {
+	        // --- 修改这里 ---
+	        // 不要看 audio 标签现在的状态，要看你的业务状态 isPlaying
+	        const shouldPlay = isPlaying 
+	        
+	        audioRef.current.pause()
+	        audioRef.current.src = musicList[currentIndex].path
+	        audioRef.current.loop = false
+	        setProgress(0)
+	
+	        // 如果当前是播放模式，切换切歌后直接播放
+	        if (shouldPlay) {
+	            audioRef.current.play().catch(console.error)
+	        }
+	    }
+	}, [currentIndex, musicList, isPlaying]) // 记得把 isPlaying 加入依赖数组
 
 	// Handle play/pause state change
 	useEffect(() => {

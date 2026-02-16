@@ -7,12 +7,14 @@ import { useMarkdownRender } from '@/hooks/use-markdown-render'
 import { pushAbout, type AboutData } from './services/push-about'
 import { useAuthStore } from '@/hooks/use-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
+import { useRouter } from 'next/navigation'
 import LikeButton from '@/components/like-button'
 import GithubSVG from '@/svgs/github.svg'
 import GuestbookOutlineSVG from '@/svgs/guestbook-outline.svg'
 import initialData from './list.json'
 
 export default function Page() {
+	const router = useRouter()
 	const [data, setData] = useState<AboutData>(initialData as AboutData)
 	const [originalData, setOriginalData] = useState<AboutData>(initialData as AboutData)
 	const [isEditMode, setIsEditMode] = useState(false)
@@ -169,8 +171,8 @@ export default function Page() {
 					)}
 
 					<div className='mt-8 flex items-center justify-center gap-6'>
-						<motion.a
-							href='/guestbook'
+						<motion.button
+							onClick={() => router.push('/guestbook')}
 							initial={{ opacity: 0, scale: 0.6 }}
 							animate={{ opacity: 1, scale: 1 }}
 							whileHover={{ scale: 1.05 }}
@@ -179,7 +181,7 @@ export default function Page() {
 						>
 							<GuestbookOutlineSVG className='h-5 w-5' />
 							留言板
-						</motion.a>
+						</motion.button>
 
 						<LikeButton slug='open-source' delay={0} />
 					</div>
