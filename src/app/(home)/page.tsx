@@ -11,6 +11,7 @@ import WriteButtons from '@/app/(home)/write-buttons'
 import LikePosition from './like-position'
 import HatCard from './hat-card'
 import BeianCard from './beian-card'
+import GuestbookCard from './guestbook-card'
 import { useSize } from '@/hooks/use-size'
 import { motion } from 'motion/react'
 import { useLayoutEditStore } from './stores/layout-edit-store'
@@ -85,7 +86,19 @@ export default function Home() {
 				{!maxSM && cardStyles.shareCard?.enabled !== false && <ShareCard />}
 				{cardStyles.articleCard?.enabled !== false && <AritcleCard />}
 				{!maxSM && cardStyles.writeButtons?.enabled !== false && <WriteButtons />}
-				{cardStyles.likePosition?.enabled !== false && <LikePosition />}
+				
+				{/* 移动端：留言板和 Like 按钮并排显示 */}
+				{maxSM && (
+					<div className='flex items-center gap-6'>
+						{cardStyles.guestbookCard?.enabled !== false && <GuestbookCard />}
+						{cardStyles.likePosition?.enabled !== false && <LikePosition />}
+					</div>
+				)}
+				
+				{/* 桌面端：正常显示 */}
+				{!maxSM && cardStyles.likePosition?.enabled !== false && <LikePosition />}
+				{!maxSM && cardStyles.guestbookCard?.enabled !== false && <GuestbookCard />}
+				
 				{cardStyles.hatCard?.enabled !== false && <HatCard />}
 				{cardStyles.beianCard?.enabled !== false && <BeianCard />}
 			</div>

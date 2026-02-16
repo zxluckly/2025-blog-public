@@ -104,5 +104,13 @@
 		"offsetX": null,
 		"offsetY": null,
 		"enabled": false
+	},
+	"guestbookCard": {
+		"width": 240,
+		"height": 60,
+		"order": 9,
+		"offsetX": 174,
+		"offsetY": 358,
+		"enabled": true
 	}
 }
