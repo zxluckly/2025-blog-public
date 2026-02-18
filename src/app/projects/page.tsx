@@ -3,8 +3,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'motion/react'
 import { toast } from 'sonner'
+import { MessageSquare } from 'lucide-react'
 import { ProjectCard, type Project } from './components/project-card'
 import CreateDialog from './components/create-dialog'
+import AIChatDialog from '@/components/ai-chat-dialog'
 import { pushProjects } from './services/push-projects'
 import { useAuthStore } from '@/hooks/use-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
@@ -18,6 +20,7 @@ export default function Page() {
 	const [isSaving, setIsSaving] = useState(false)
 	const [editingProject, setEditingProject] = useState<Project | null>(null)
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+	const [isAIChatOpen, setIsAIChatOpen] = useState(false)
 	const [imageItems, setImageItems] = useState<Map<string, ImageItem>>(new Map())
 	const keyInputRef = useRef<HTMLInputElement>(null)
 
@@ -175,7 +178,21 @@ export default function Page() {
 				)}
 			</motion.div>
 
+			{/* AI 对话按钮 */}
+			<motion.button
+				initial={{ opacity: 0, scale: 0 }}
+				animate={{ opacity: 1, scale: 1 }}
+				transition={{ delay: 0.5 }}
+				whileHover={{ scale: 1.1 }}
+				whileTap={{ scale: 0.9 }}
+				onClick={() => setIsAIChatOpen(true)}
+				className='bg-brand fixed bottom-8 right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-shadow hover:shadow-xl max-sm:bottom-6 max-sm:right-6 max-sm:h-12 max-sm:w-12'
+			>
+				<MessageSquare className='h-6 w-6 max-sm:h-5 max-sm:w-5' />
+			</motion.button>
+
 			{isCreateDialogOpen && <CreateDialog project={editingProject} onClose={() => setIsCreateDialogOpen(false)} onSave={handleSaveProject} />}
+			<AIChatDialog isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} />
 		</>
 	)
 }
