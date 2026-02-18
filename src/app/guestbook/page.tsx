@@ -146,8 +146,8 @@ export default function GuestbookPage() {
 	const containerRef = useRef<HTMLDivElement>(null)
 
 	// 显示数量限制
-	const MAX_DISPLAY_PC = 50 // PC端最多显示30条
-	const MAX_DISPLAY_MOBILE = 15 // 移动端最多显示15条
+	const MAX_DISPLAY_PC = 100 // PC端最多显示留言
+	const MAX_DISPLAY_MOBILE = 25 // 移动端最多显示留言
 	
 	// 检测是否为移动端
 	const [isMobile, setIsMobile] = useState(false)
