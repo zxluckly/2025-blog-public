@@ -9,6 +9,8 @@ interface Message {
 	id: string
 	nickname: string
 	content: string
+	email?: string
+	ip?: string
 	timestamp: string
 	color: string
 	x: number
@@ -133,10 +135,35 @@ MessageCard.displayName = 'MessageCard'
 export default function GuestbookPage() {
 	const [messages, setMessages] = useState<Message[]>([])
 	const [nickname, setNickname] = useState('')
+	const [email, setEmail] = useState('')
 	const [content, setContent] = useState('')
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [isFormOpen, setIsFormOpen] = useState(false)
+	const [isAdminViewOpen, setIsAdminViewOpen] = useState(false)
+	const [adminPassword, setAdminPassword] = useState('')
+	const [isAuthenticated, setIsAuthenticated] = useState(false)
+	const [allMessages, setAllMessages] = useState<Message[]>([])
 	const containerRef = useRef<HTMLDivElement>(null)
+
+	// 显示数量限制
+	const MAX_DISPLAY_PC = 50 // PC端最多显示30条
+	const MAX_DISPLAY_MOBILE = 15 // 移动端最多显示15条
+	
+	// 检测是否为移动端
+	const [isMobile, setIsMobile] = useState(false)
+	
+	useEffect(() => {
+		const checkMobile = () => {
+			setIsMobile(window.innerWidth < 640)
+		}
+		checkMobile()
+		window.addEventListener('resize', checkMobile)
+		return () => window.removeEventListener('resize', checkMobile)
+	}, [])
+	
+	// 根据设备类型限制显示数量
+	const maxDisplay = isMobile ? MAX_DISPLAY_MOBILE : MAX_DISPLAY_PC
+	const displayedMessages = messages.slice(-maxDisplay) // 显示最新的N条
 
 	// 生成随机位置和大小，确保美观
 	// 留言少时集中在中心，多时扩散到全屏
@@ -258,10 +285,14 @@ export default function GuestbookPage() {
 			})
 			.catch(console.error)
 
-		// 从 localStorage 读取昵称
+		// 从 localStorage 读取昵称和邮箱
 		const savedNickname = localStorage.getItem('guestbook_nickname')
+		const savedEmail = localStorage.getItem('guestbook_email')
 		if (savedNickname) {
 			setNickname(savedNickname)
+		}
+		if (savedEmail) {
+			setEmail(savedEmail)
 		}
 	}, [])
 
@@ -283,6 +314,24 @@ export default function GuestbookPage() {
 			return
 		}
 
+		// 验证邮箱格式（如果填写了）
+		if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+			toast.error('请输入有效的邮箱地址')
+			return
+		}
+
+		// 防刷屏检查：限制提交频率（60秒内只能提交一次）
+		const lastSubmitTime = localStorage.getItem('guestbook_last_submit')
+		if (lastSubmitTime) {
+			const timeDiff = Date.now() - parseInt(lastSubmitTime)
+			const cooldownSeconds = 60
+			if (timeDiff < cooldownSeconds * 1000) {
+				const remainingSeconds = Math.ceil((cooldownSeconds * 1000 - timeDiff) / 1000)
+				toast.error(`请等待 ${remainingSeconds} 秒后再提交`)
+				return
+			}
+		}
+
 		setIsSubmitting(true)
 
 		try {
@@ -291,6 +340,7 @@ export default function GuestbookPage() {
 				id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
 				nickname: nickname.trim(),
 				content: content.trim(),
+				email: email.trim() || undefined,
 				timestamp: new Date().toISOString(),
 				color: COLORS[Math.floor(Math.random() * COLORS.length)],
 				x: pos.x,
@@ -305,19 +355,52 @@ export default function GuestbookPage() {
 			})
 
 			if (!response.ok) {
-				throw new Error('提交失败')
+				const error = await response.json()
+				throw new Error(error.error || '提交失败')
 			}
 
+			// 记录提交时间
+			localStorage.setItem('guestbook_last_submit', Date.now().toString())
+			
 			setMessages(prev => [...prev, newMessage])
 			setContent('')
 			setIsFormOpen(false)
 			localStorage.setItem('guestbook_nickname', nickname.trim())
+			if (email.trim()) {
+				localStorage.setItem('guestbook_email', email.trim())
+			}
 			toast.success('留言成功！')
-		} catch (error) {
+		} catch (error: any) {
 			console.error('Failed to submit message:', error)
-			toast.error('留言失败，请稍后重试')
+			toast.error(error.message || '留言失败，请稍后重试')
 		} finally {
 			setIsSubmitting(false)
+		}
+	}
+
+	const handleAdminView = () => {
+		setIsAdminViewOpen(true)
+		setIsAuthenticated(false)
+		setAdminPassword('')
+	}
+
+	const handleAdminAuth = async () => {
+		// 从环境变量读取密码，如果没有则使用默认值
+		const correctPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
+		
+		if (adminPassword === correctPassword) {
+			setIsAuthenticated(true)
+			// 加载所有留言（包括邮箱）
+			try {
+				const response = await fetch('/api/guestbook?admin=true')
+				const data = await response.json()
+				setAllMessages(data)
+			} catch (error) {
+				console.error('Failed to load messages:', error)
+				toast.error('加载失败')
+			}
+		} else {
+			toast.error('密码错误')
 		}
 	}
 
@@ -335,15 +418,23 @@ export default function GuestbookPage() {
 						在这里留下你的足迹吧 ✨
 					</p>
 					<p className='text-secondary mt-2 text-xs'>
-						共 {messages.length} 条留言
+						共 {messages.length} 条留言 {messages.length > maxDisplay && `（显示最新 ${maxDisplay} 条）`}
 					</p>
+					<motion.button
+						onClick={handleAdminView}
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						className='text-secondary mt-4 text-xs underline opacity-50 hover:opacity-100'
+					>
+						管理员查看
+					</motion.button>
 				</motion.div>
 			</div>
 
 			{/* 悬浮留言标签 */}
 			<div ref={containerRef} className='pointer-events-none absolute inset-0 overflow-hidden'>
 				<AnimatePresence>
-					{messages.map((message) => (
+					{displayedMessages.map((message) => (
 						<MessageCard
 							key={message.id}
 							message={message}
@@ -413,6 +504,22 @@ export default function GuestbookPage() {
 
 								<div className='mb-4'>
 									<label className='mb-2 block text-sm font-medium max-sm:text-xs'>
+										邮箱
+										<span className='text-secondary ml-2 text-xs font-normal'>
+											（可选）
+										</span>
+									</label>
+									<input
+										type='email'
+										value={email}
+										onChange={(e) => setEmail(e.target.value)}
+										placeholder='your@email.com'
+										className='w-full rounded-xl border bg-white/60 px-4 py-2 text-sm transition-colors focus:border-[var(--color-brand)] max-sm:px-3 max-sm:py-1.5 max-sm:text-xs'
+									/>
+								</div>
+
+								<div className='mb-4'>
+									<label className='mb-2 block text-sm font-medium max-sm:text-xs'>
 										留言内容
 										<span className='text-secondary ml-2 text-xs'>
 											({content.length}/100)
@@ -449,6 +556,96 @@ export default function GuestbookPage() {
 									</motion.button>
 								</div>
 							</form>
+						</motion.div>
+					</>
+				)}
+			</AnimatePresence>
+
+			{/* 管理员查看弹窗 */}
+			<AnimatePresence>
+				{isAdminViewOpen && (
+					<>
+						{/* 背景遮罩 */}
+						<motion.div
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							onClick={() => setIsAdminViewOpen(false)}
+							className='fixed inset-0 z-50 bg-black/30 backdrop-blur-sm'
+						/>
+
+						{/* 管理员面板 */}
+						<motion.div
+							initial={{ opacity: 0, scale: 0.9 }}
+							animate={{ opacity: 1, scale: 1 }}
+							exit={{ opacity: 0, scale: 0.9 }}
+							className='card-rounded bg-card fixed left-1/2 top-1/2 z-50 max-h-[80vh] w-[600px] max-w-[90vw] -translate-x-1/2 -translate-y-1/2 overflow-hidden border shadow-2xl backdrop-blur-sm'
+						>
+							<div className='flex items-center justify-between border-b p-6 max-sm:p-4'>
+								<h3 className='text-lg font-semibold max-sm:text-base'>管理员查看</h3>
+								<button
+									onClick={() => setIsAdminViewOpen(false)}
+									className='text-secondary hover:text-primary transition-colors'
+								>
+									<X className='h-5 w-5 max-sm:h-4 max-sm:w-4' />
+								</button>
+							</div>
+
+							<div className='max-h-[calc(80vh-80px)] overflow-y-auto p-6 max-sm:p-4'>
+								{!isAuthenticated ? (
+									<div className='space-y-4'>
+										<p className='text-secondary text-sm'>请输入管理员密码查看所有留言</p>
+										<input
+											type='password'
+											value={adminPassword}
+											onChange={(e) => setAdminPassword(e.target.value)}
+											onKeyDown={(e) => e.key === 'Enter' && handleAdminAuth()}
+											placeholder='请输入密码'
+											className='w-full rounded-xl border bg-white/60 px-4 py-2 text-sm transition-colors focus:border-[var(--color-brand)]'
+										/>
+										<motion.button
+											onClick={handleAdminAuth}
+											whileHover={{ scale: 1.02 }}
+											whileTap={{ scale: 0.98 }}
+											className='brand-btn w-full justify-center'
+										>
+											验证
+										</motion.button>
+									</div>
+								) : (
+									<div className='space-y-4'>
+										<p className='text-secondary mb-4 text-sm'>
+											共 {allMessages.length} 条留言
+										</p>
+										{allMessages.map((msg) => (
+											<div
+												key={msg.id}
+												className='rounded-xl border bg-white/40 p-4 max-sm:p-3'
+											>
+												<div className='mb-2 flex items-start justify-between gap-2'>
+													<div className='flex-1'>
+														<div className='font-medium'>{msg.nickname}</div>
+														{msg.email && (
+															<div className='text-secondary mt-1 text-xs'>
+																 {msg.email}
+															</div>
+														)}
+														{msg.ip && (
+															<div className='text-secondary mt-1 text-xs'>
+																 {msg.ip}
+															</div>
+														)}
+													</div>
+													<div className='text-secondary text-xs'>
+														{formatDate(msg.timestamp)}
+													</div>
+												</div>
+												<p className='text-sm'>{msg.content}</p>
+											</div>
+										))}
+									</div>
+								)}
+							</div>
 						</motion.div>
 					</>
 				)}

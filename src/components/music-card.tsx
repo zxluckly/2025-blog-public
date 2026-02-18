@@ -37,6 +37,12 @@ export default function MusicCard() {
 	const [progress, setProgress] = useState(0)
 	const audioRef = useRef<HTMLAudioElement | null>(null)
 	const currentIndexRef = useRef(0)
+	const isPlayingRef = useRef(false)
+
+	// 同步 isPlaying 状态到 ref
+	useEffect(() => {
+		isPlayingRef.current = isPlaying
+	}, [isPlaying])
 
 	const isHomePage = pathname === '/'
 
@@ -118,21 +124,20 @@ export default function MusicCard() {
 	useEffect(() => {
 	    currentIndexRef.current = currentIndex
 	    if (audioRef.current && musicList.length > 0) {
-	        // --- 修改这里 ---
-	        // 不要看 audio 标签现在的状态，要看你的业务状态 isPlaying
-	        const shouldPlay = isPlaying 
+	        // 使用 ref 来检查播放状态，避免依赖 isPlaying state
+	        const shouldPlay = isPlayingRef.current
 	        
 	        audioRef.current.pause()
 	        audioRef.current.src = musicList[currentIndex].path
 	        audioRef.current.loop = false
 	        setProgress(0)
 	
-	        // 如果当前是播放模式，切换切歌后直接播放
+	        // 如果当前是播放模式，切换歌曲后直接播放
 	        if (shouldPlay) {
 	            audioRef.current.play().catch(console.error)
 	        }
 	    }
-	}, [currentIndex, musicList, isPlaying]) // 记得把 isPlaying 加入依赖数组
+	}, [currentIndex, musicList]) // 移除 isPlaying 依赖
 
 	// Handle play/pause state change
 	useEffect(() => {
