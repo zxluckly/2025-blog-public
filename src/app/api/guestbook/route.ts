@@ -18,8 +18,8 @@ const RATE_LIMIT_PREFIX = 'guestbook:ratelimit:'
 const RATE_LIMIT_DURATION = 60 // 60秒冷却时间
 
 // 获取客户端 IP 地址
-function getClientIP(request: Request): string {
-	const headersList = headers()
+async function getClientIP(request: Request): Promise<string> {
+	const headersList = await headers()
 	const forwarded = headersList.get('x-forwarded-for')
 	const realIP = headersList.get('x-real-ip')
 	
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
 	try {
 		const newMessage = await request.json()
-		const clientIP = getClientIP(request)
+		const clientIP = await getClientIP(request)
 		
 		// 验证数据
 		if (!newMessage.nickname || !newMessage.content) {
