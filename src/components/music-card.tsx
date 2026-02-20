@@ -12,6 +12,7 @@ import { Pause } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 import staticMusicList from '../../public/music/list.json'
+import { useMusicStore } from '@/stores/music-store'
 
 // 音乐列表类型
 type MusicItem = {
@@ -32,7 +33,7 @@ export default function MusicCard() {
 	const calendarCardStyles = cardStyles.calendarCard
 
 	const [musicList, setMusicList] = useState<MusicItem[]>(staticMusicList)
-	const [isPlaying, setIsPlaying] = useState(false)
+	const { isPlaying, setIsPlaying } = useMusicStore()
 	const [currentIndex, setCurrentIndex] = useState(() => getRandomIndex(staticMusicList.length))
 	const [progress, setProgress] = useState(0)
 	const audioRef = useRef<HTMLAudioElement | null>(null)
