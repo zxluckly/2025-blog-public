@@ -216,6 +216,18 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 
 			if (!response.ok) {
 				const error = await response.json()
+				
+				// 处理速率限制错误
+				if (response.status === 429) {
+					const retryAfter = error.retryAfter || 60
+					throw new Error(`${error.error || '请求过于频繁'}，请 ${retryAfter} 秒后再试`)
+				}
+				
+				// 处理来源验证错误
+				if (response.status === 403) {
+					throw new Error('请求被拒绝，请刷新页面后重试')
+				}
+				
 				throw new Error(error.error || '请求失败')
 			}
 
