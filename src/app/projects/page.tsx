@@ -10,7 +10,6 @@ import AIChatDialog from '@/components/ai-chat-dialog'
 import { pushProjects } from './services/push-projects'
 import { useAuthStore } from '@/hooks/use-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
-import { useMusicStore } from '@/stores/music-store'
 import initialList from './list.json'
 import type { ImageItem } from './components/image-upload-dialog'
 
@@ -27,7 +26,6 @@ export default function Page() {
 
 	const { isAuth, setPrivateKey } = useAuthStore()
 	const { siteContent } = useConfigStore()
-	const { isPlaying: isMusicPlaying } = useMusicStore()
 	const hideEditButton = siteContent.hideEditButton ?? false
 
 	const handleUpdate = (updatedProject: Project, oldProject: Project, imageItem?: ImageItem) => {
@@ -183,19 +181,12 @@ export default function Page() {
 			{/* AI 对话按钮 */}
 			<motion.button
 				initial={{ opacity: 0, scale: 0 }}
-				animate={{ 
-					opacity: 1, 
-					scale: 1,
-					bottom: isMusicPlaying ? '120px' : '32px'
-				}}
+				animate={{ opacity: 1, scale: 1 }}
 				transition={{ delay: 0.5 }}
 				whileHover={{ scale: 1.1 }}
 				whileTap={{ scale: 0.9 }}
 				onClick={() => setIsAIChatOpen(true)}
-				className='bg-brand fixed right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-shadow hover:shadow-xl max-sm:right-6 max-sm:h-12 max-sm:w-12'
-				style={{
-					bottom: isMusicPlaying ? '120px' : '32px'
-				}}
+				className='bg-brand fixed bottom-8 right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-shadow hover:shadow-xl max-sm:bottom-6 max-sm:right-6 max-sm:h-12 max-sm:w-12'
 			>
 				<MessageSquare className='h-6 w-6 max-sm:h-5 max-sm:w-5' />
 			</motion.button>
