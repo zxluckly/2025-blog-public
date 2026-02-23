@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { Redis } from '@upstash/redis'
 
+// 使用 Edge Runtime，部署到全球边缘节点
+export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
 const ARK_API_KEY = process.env.ARK_API_KEY
