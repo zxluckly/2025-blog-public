@@ -135,6 +135,46 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 		}
 	}
 
+	// 压缩图片
+	const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.8): Promise<string> => {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader()
+			reader.onload = (e) => {
+				const img = new Image()
+				img.onload = () => {
+					const canvas = document.createElement('canvas')
+					let width = img.width
+					let height = img.height
+
+					// 按比例缩放
+					if (width > maxWidth) {
+						height = (height * maxWidth) / width
+						width = maxWidth
+					}
+
+					canvas.width = width
+					canvas.height = height
+
+					const ctx = canvas.getContext('2d')
+					if (!ctx) {
+						reject(new Error('无法获取 canvas context'))
+						return
+					}
+
+					ctx.drawImage(img, 0, 0, width, height)
+					
+					// 转换为 base64，使用 JPEG 格式压缩
+					const compressed = canvas.toDataURL('image/jpeg', quality)
+					resolve(compressed)
+				}
+				img.onerror = reject
+				img.src = e.target?.result as string
+			}
+			reader.onerror = reject
+			reader.readAsDataURL(file)
+		})
+	}
+
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
 		if (!file) return
@@ -152,9 +192,16 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 		}
 
 		try {
-			const base64 = await fileToBase64(file)
-			setImageBase64(base64)
-			setImagePreview(base64)
+			toast.info('正在压缩图片...')
+			// 压缩图片到 800px 宽度，质量 0.7
+			const compressed = await compressImage(file, 800, 0.7)
+			
+			// 检查压缩后的大小
+			const compressedSize = compressed.length * 0.75 / 1024 // 估算 KB
+			console.log(`图片压缩: ${(file.size / 1024).toFixed(1)}KB -> ${compressedSize.toFixed(1)}KB`)
+			
+			setImageBase64(compressed)
+			setImagePreview(compressed)
 			toast.success('图片上传成功')
 		} catch (error) {
 			console.error('Image upload error:', error)
