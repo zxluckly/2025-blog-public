@@ -65,10 +65,17 @@ export async function GET(request: Request) {
 		
 		// 如果不是管理员，移除邮箱和 IP 信息
 		if (!isAdmin && Array.isArray(messages)) {
-			return NextResponse.json(messages.map((msg: any) => {
+			const filtered = messages.map((msg: any) => {
 				const { email, ip, ...rest } = msg
 				return rest
-			}))
+			})
+			
+			// 添加缓存头，缓存 30 秒
+			return NextResponse.json(filtered, {
+				headers: {
+					'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60'
+				}
+			})
 		}
 		
 		return NextResponse.json(messages)

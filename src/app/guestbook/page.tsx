@@ -263,8 +263,11 @@ export default function GuestbookPage() {
 		return 0.85 + Math.random() * 0.3
 	}
 
-	// 加载留言
+	// 加载留言（添加加载状态）
+	const [isLoadingMessages, setIsLoadingMessages] = useState(true)
+	
 	useEffect(() => {
+		setIsLoadingMessages(true)
 		fetch('/api/guestbook')
 			.then(res => res.json())
 			.then((data: Message[]) => {
@@ -284,6 +287,7 @@ export default function GuestbookPage() {
 				setMessages(messagesWithPosition)
 			})
 			.catch(console.error)
+			.finally(() => setIsLoadingMessages(false))
 
 		// 从 localStorage 读取昵称和邮箱
 		const savedNickname = localStorage.getItem('guestbook_nickname')
@@ -417,9 +421,13 @@ export default function GuestbookPage() {
 					<p className='text-secondary text-sm max-sm:text-xs'>
 						在这里留下你的足迹吧 ✨
 					</p>
-					<p className='text-secondary mt-2 text-xs'>
-						共 {messages.length} 条留言 {messages.length > maxDisplay && `（显示最新 ${maxDisplay} 条）`}
-					</p>
+					{isLoadingMessages ? (
+						<p className='text-secondary mt-2 text-xs'>加载中...</p>
+					) : (
+						<p className='text-secondary mt-2 text-xs'>
+							共 {messages.length} 条留言 {messages.length > maxDisplay && `（显示最新 ${maxDisplay} 条）`}
+						</p>
+					)}
 					<motion.button
 						onClick={handleAdminView}
 						whileHover={{ scale: 1.05 }}
