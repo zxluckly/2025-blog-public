@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { useSize } from '@/hooks/use-size'
 import ImageUploadDialog, { type ImageItem } from './image-upload-dialog'
+import DetailEditDialog from './detail-edit-dialog'
 
 export interface Project {
 	name: string
@@ -16,12 +17,15 @@ export interface Project {
 	tags: string[]
 	github?: string
 	npm?: string
+	// 详情页字段
+	detailImages?: string[] // 详情页多张图片
+	detailMarkdown?: string // 详情页 Markdown 文档
 }
 
 interface ProjectCardProps {
 	project: Project
 	isEditMode?: boolean
-	onUpdate?: (project: Project, oldProject: Project, imageItem?: ImageItem) => void
+	onUpdate?: (project: Project, oldProject: Project, imageItem?: ImageItem, detailImageFiles?: File[]) => void
 	onDelete?: () => void
 }
 
@@ -30,12 +34,14 @@ export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete }:
 	const { maxSM } = useSize()
 	const [localProject, setLocalProject] = useState(project)
 	const [showImageDialog, setShowImageDialog] = useState(false)
+	const [showDetailDialog, setShowDetailDialog] = useState(false)
 	const [imageItem, setImageItem] = useState<ImageItem | null>(null)
+	const [detailImageFiles, setDetailImageFiles] = useState<File[]>([])
 
 	const handleFieldChange = (field: keyof Project, value: any) => {
 		const updated = { ...localProject, [field]: value }
 		setLocalProject(updated)
-		onUpdate?.(updated, project, imageItem || undefined)
+		onUpdate?.(updated, project, imageItem || undefined, detailImageFiles)
 	}
 
 	const handleImageSubmit = (image: ImageItem) => {
@@ -43,7 +49,14 @@ export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete }:
 		const imageUrl = image.type === 'url' ? image.url : image.previewUrl
 		const updated = { ...localProject, image: imageUrl }
 		setLocalProject(updated)
-		onUpdate?.(updated, project, image)
+		onUpdate?.(updated, project, image, detailImageFiles)
+	}
+
+	const handleDetailSave = (detailImages: string[], detailMarkdown: string, imageFiles: File[]) => {
+		setDetailImageFiles(imageFiles)
+		const updated = { ...localProject, detailImages, detailMarkdown }
+		setLocalProject(updated)
+		onUpdate?.(updated, project, imageItem || undefined, imageFiles)
 	}
 
 	const handleTagsChange = (tagsStr: string) => {
@@ -58,6 +71,7 @@ export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete }:
 		setLocalProject(project)
 		setIsEditing(false)
 		setImageItem(null)
+		setDetailImageFiles([])
 	}
 
 	const canEdit = isEditMode && isEditing
@@ -73,6 +87,9 @@ export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete }:
 						<>
 							<button onClick={handleCancel} className='rounded-lg px-2 py-1.5 text-xs text-gray-400 transition-colors hover:text-gray-600'>
 								取消
+							</button>
+							<button onClick={() => setShowDetailDialog(true)} className='rounded-lg px-2 py-1.5 text-xs text-green-400 transition-colors hover:text-green-600'>
+								编辑详情
 							</button>
 							<button onClick={() => setIsEditing(false)} className='rounded-lg px-2 py-1.5 text-xs text-blue-400 transition-colors hover:text-blue-600'>
 								完成
@@ -180,13 +197,15 @@ export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete }:
 					</>
 				) : (
 					<>
-						<Link
-							href={localProject.url}
-							target='_blank'
-							rel='noopener noreferrer'
-							className='bg-card hover:bg-bg rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors'>
-							Website
-						</Link>
+						{localProject.url && (
+							<Link
+								href={localProject.url}
+								target='_blank'
+								rel='noopener noreferrer'
+								className='bg-card hover:bg-bg rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors'>
+								Website
+							</Link>
+						)}
 						{localProject.github && (
 							<Link
 								href={localProject.github}
@@ -205,12 +224,23 @@ export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete }:
 								NPM
 							</Link>
 						)}
+						{(localProject.detailMarkdown || localProject.detailImages) && (
+							<Link
+								href={`/projects/${encodeURIComponent(localProject.name)}`}
+								className='bg-brand hover:bg-brand/90 rounded-lg border border-transparent px-3 py-1.5 text-sm font-medium text-white transition-colors'>
+								查看详情
+							</Link>
+						)}
 					</>
 				)}
 			</div>
 
 			{canEdit && showImageDialog && (
 				<ImageUploadDialog currentImage={localProject.image} onClose={() => setShowImageDialog(false)} onSubmit={handleImageSubmit} />
+			)}
+
+			{canEdit && showDetailDialog && (
+				<DetailEditDialog project={localProject} onClose={() => setShowDetailDialog(false)} onSave={handleDetailSave} />
 			)}
 		</motion.div>
 	)

@@ -23,6 +23,7 @@ export default function Page() {
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 	const [isAIChatOpen, setIsAIChatOpen] = useState(false)
 	const [imageItems, setImageItems] = useState<Map<string, ImageItem>>(new Map())
+	const [detailImageFiles, setDetailImageFiles] = useState<Map<string, File[]>>(new Map())
 	const keyInputRef = useRef<HTMLInputElement>(null)
 
 	const { isAuth, setPrivateKey } = useAuthStore()
@@ -30,12 +31,19 @@ export default function Page() {
 	const { isPlaying: isMusicPlaying } = useMusicStore()
 	const hideEditButton = siteContent.hideEditButton ?? false
 
-	const handleUpdate = (updatedProject: Project, oldProject: Project, imageItem?: ImageItem) => {
+	const handleUpdate = (updatedProject: Project, oldProject: Project, imageItem?: ImageItem, detailFiles?: File[]) => {
 		setProjects(prev => prev.map(p => (p.url === oldProject.url ? updatedProject : p)))
 		if (imageItem) {
 			setImageItems(prev => {
 				const newMap = new Map(prev)
 				newMap.set(updatedProject.url, imageItem)
+				return newMap
+			})
+		}
+		if (detailFiles && detailFiles.length > 0) {
+			setDetailImageFiles(prev => {
+				const newMap = new Map(prev)
+				newMap.set(updatedProject.name, detailFiles)
 				return newMap
 			})
 		}
@@ -86,11 +94,13 @@ export default function Page() {
 		try {
 			await pushProjects({
 				projects,
-				imageItems
+				imageItems,
+				detailImageFiles
 			})
 
 			setOriginalProjects(projects)
 			setImageItems(new Map())
+			setDetailImageFiles(new Map())
 			setIsEditMode(false)
 			toast.success('保存成功！')
 		} catch (error: any) {
@@ -104,6 +114,7 @@ export default function Page() {
 	const handleCancel = () => {
 		setProjects(originalProjects)
 		setImageItems(new Map())
+		setDetailImageFiles(new Map())
 		setIsEditMode(false)
 	}
 
