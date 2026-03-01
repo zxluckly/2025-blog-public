@@ -33,8 +33,8 @@ export default function DetailEditDialog({ project, onClose, onSave }: DetailEdi
 				toast.error(`${file.name} 不是图片文件`)
 				continue
 			}
-			if (file.size > 5 * 1024 * 1024) {
-				toast.error(`${file.name} 大小超过 5MB`)
+			if (file.size > 10 * 1024 * 1024) {
+				toast.error(`${file.name} 大小超过 10MB`)
 				continue
 			}
 
@@ -172,7 +172,7 @@ export default function DetailEditDialog({ project, onClose, onSave }: DetailEdi
 								<input
 									ref={imageInputRef}
 									type='file'
-									accept='image/*'
+									accept='image/*,image/webp'
 									multiple
 									onChange={handleImageUpload}
 									className='hidden'
