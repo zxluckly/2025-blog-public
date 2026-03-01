@@ -89,55 +89,8 @@ export async function pushProjects(params: PushProjectsParams): Promise<void> {
 			// 更新项目的详情图片路径
 			updatedProjects = updatedProjects.map(p => {
 				if (p.name === projectName) {
-					// 上传详情图片
-	if (detailImageFiles && detailImageFiles.size > 0) {
-		toast.info('正在上传详情图片...')
-		for (const [projectName, files] of detailImageFiles.entries()) {
-			const uploadedUrls: string[] = []
-			
-			for (const file of files) {
-				const hash = await hashFileSHA256(file)
-				const ext = getFileExt(file.name)
-				const filename = `${hash}${ext}`
-				const publicPath = `/images/project/${filename}`
-
-				if (!uploadedHashes.has(hash)) {
-					const path = `public/images/project/${filename}`
-					const contentBase64 = await fileToBase64NoPrefix(file)
-					const blobData = await createBlob(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, contentBase64, 'base64')
-					treeItems.push({
-						path,
-						mode: '100644',
-						type: 'blob',
-						sha: blobData.sha
-					})
-					uploadedHashes.add(hash)
-				}
-
-				uploadedUrls.push(publicPath)
-			}
-
-			// 更新项目的详情图片路径
-			updatedProjects = updatedProjects.map(p => {
-				if (p.name === projectName) {
 					// 合并已有的 URL 图片和新上传的图片
 					const existingUrls = (p.detailImages || []).filter(url => url.startsWith('http') || !url.startsWith('blob:'))
-					return { ...p, detailImages: [...existingUrls, ...uploadedUrls] }
-				}
-				return p
-			})
-		}
-	}
-
-	const projectsJson = JSON.stringify(updatedProjects, null, '\t')
-	const projectsBlob = await createBlob(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, toBase64Utf8(projectsJson), 'base64')
-	treeItems.push({
-		path: 'src/app/projects/list.json',
-		mode: '100644',
-		type: 'blob',
-		sha: projectsBlob.sha
-	})
-
 					return { ...p, detailImages: [...existingUrls, ...uploadedUrls] }
 				}
 				return p
