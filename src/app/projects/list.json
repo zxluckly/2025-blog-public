@@ -86,7 +86,7 @@
 	{
 		"name": "社交网络分析工具",
 		"year": 2025,
-		"image": "blob:https://www.zxluky.asia/241b6051-8b61-4eb6-ad8a-cd1357c33131",
+		"image": "/images/project/1b34d315d0925c99.webp",
 		"url": "",
 		"description": "本项目是一个基于Spring Boot和Neo4j的社交网络分析工具，旨在通过收集、分析和可视化社交媒体数据，帮助用户理解社交网络中的关系、情感倾向和热点话题。项目采用前后端分离架构，后端基于若依(RuoYi)框架开发，前端使用Vue3和Element Plus。",
 		"tags": [
