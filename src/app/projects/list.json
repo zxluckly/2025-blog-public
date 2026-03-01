@@ -29,7 +29,7 @@
 	{
 		"name": "昆虫识别系统",
 		"year": 2026,
-		"image": "blob:https://www.zxluky.asia/e978f9b8-f8eb-4b79-8113-0f70b24ce709",
+		"image": "/images/project/e0a0596329dfbcc8.webp",
 		"url": "https://www.zxluky.asia/projects",
 		"description": "智能昆虫识别系统是一个基于深度学习技术的综合性昆虫识别与生态监测平台。该系统采用前后端分离架构，结合了YOLO目标检测算法、自然语言处理、知识图谱等先进技术，为昆虫学研究、生态保护和教育科普提供全方位的智能化解决方案。",
 		"tags": [
