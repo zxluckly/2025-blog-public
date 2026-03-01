@@ -32,11 +32,11 @@ export default function Page() {
 	const hideEditButton = siteContent.hideEditButton ?? false
 
 	const handleUpdate = (updatedProject: Project, oldProject: Project, imageItem?: ImageItem, detailFiles?: File[]) => {
-		setProjects(prev => prev.map(p => (p.url === oldProject.url ? updatedProject : p)))
+		setProjects(prev => prev.map(p => (p.name === oldProject.name ? updatedProject : p)))
 		if (imageItem) {
 			setImageItems(prev => {
 				const newMap = new Map(prev)
-				newMap.set(updatedProject.url, imageItem)
+				newMap.set(updatedProject.name, imageItem)
 				return newMap
 			})
 		}

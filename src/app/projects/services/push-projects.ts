@@ -33,7 +33,7 @@ export async function pushProjects(params: PushProjectsParams): Promise<void> {
 	// 上传封面图片
 	if (imageItems && imageItems.size > 0) {
 		toast.info('正在上传封面图片...')
-		for (const [url, imageItem] of imageItems.entries()) {
+		for (const [projectName, imageItem] of imageItems.entries()) {
 			if (imageItem.type === 'file') {
 				const hash = imageItem.hash || (await hashFileSHA256(imageItem.file))
 				const ext = getFileExt(imageItem.file.name)
@@ -53,7 +53,7 @@ export async function pushProjects(params: PushProjectsParams): Promise<void> {
 					uploadedHashes.add(hash)
 				}
 
-				updatedProjects = updatedProjects.map(p => (p.url === url ? { ...p, image: publicPath } : p))
+				updatedProjects = updatedProjects.map(p => (p.name === projectName ? { ...p, image: publicPath } : p))
 			}
 		}
 	}
@@ -89,8 +89,10 @@ export async function pushProjects(params: PushProjectsParams): Promise<void> {
 			// 更新项目的详情图片路径
 			updatedProjects = updatedProjects.map(p => {
 				if (p.name === projectName) {
-					// 合并已有的 URL 图片和新上传的图片
-					const existingUrls = (p.detailImages || []).filter(url => url.startsWith('http') || !url.startsWith('blob:'))
+					// 过滤掉 blob URL，只保留真实的 URL 和新上传的图片
+					const existingUrls = (p.detailImages || []).filter(url => 
+						!url.startsWith('blob:') && (url.startsWith('http') || url.startsWith('/'))
+					)
 					return { ...p, detailImages: [...existingUrls, ...uploadedUrls] }
 				}
 				return p
