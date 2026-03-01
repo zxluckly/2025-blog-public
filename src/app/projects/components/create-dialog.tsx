@@ -61,8 +61,8 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 	}
 
 	const handleSubmit = () => {
-		if (!formData.name.trim() || !formData.image.trim() || !formData.url.trim() || !formData.description.trim()) {
-			toast.error('请填写所有必填项')
+		if (!formData.name.trim() || !formData.image.trim() || !formData.description.trim()) {
+			toast.error('请填写所有必填项（项目名称、封面图片、项目介绍）')
 			return
 		}
 
@@ -114,7 +114,7 @@ export default function CreateDialog({ project, onClose, onSave }: CreateDialogP
 								type='url'
 								value={formData.url}
 								onChange={e => setFormData({ ...formData, url: e.target.value })}
-								placeholder='https://example.com'
+								placeholder='项目链接（可选）'
 								className='text-secondary flex-1 truncate text-xs focus:outline-none'
 							/>
 						</div>
