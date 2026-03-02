@@ -98,7 +98,9 @@ function validateOrigin(request: Request): boolean {
 		'localhost',
 		'127.0.0.1',
 		'zxluky.asia',
-		'www.zxluky.asia'
+		'www.zxluky.asia',
+		'zxlucky.top',
+		'www.zxlucky.top'
 	]
 
 	// 检查 origin
