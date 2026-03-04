@@ -42,13 +42,6 @@
 	"currentBackgroundImageId": "",
 	"socialButtons": [
 		{
-			"id": "juejin",
-			"type": "qq",
-			"value": "3190925010",
-			"label": "🐧",
-			"order": 2
-		},
-		{
 			"id": "email",
 			"type": "email",
 			"value": "haochenwu7@gmail.com",
@@ -61,6 +54,13 @@
 			"value": "https://github.com/zxluckly",
 			"label": "GitHub",
 			"order": 3
+		},
+		{
+			"id": "button-1772626490396",
+			"type": "link",
+			"value": "https://qm.qq.com/cgi-bin/qm/qr?k=Oat6oSS-1DyxxvhTuwSkyc077slHnS1N",
+			"label": "qq",
+			"order": 2
 		}
 	],
 	"clockShowSeconds": false,
