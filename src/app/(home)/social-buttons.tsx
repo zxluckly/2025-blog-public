@@ -124,7 +124,7 @@ export default function SocialButtons() {
 		zhihu: ZhihuSVG,
 		bilibili: BilibiliSVG,
 		qq: QqSVG,
-		link: () => null
+		link: QqSVG,
 	}
 
 	const renderButton = (button: SocialButtonConfig) => {
@@ -232,17 +232,45 @@ export default function SocialButtons() {
 			)
 		}
 
+		//原跳转逻辑
+		// if (button.type === 'link') {
+		// 	return (
+		// 		<motion.a
+		// 			key={button.id}
+		// 			href={button.value}
+		// 			target='_blank'
+		// 			{...commonProps}
+		// 			className='card relative flex items-center gap-2 rounded-xl px-3 py-2.5 font-medium whitespace-nowrap'>
+		// 			<Icon className={'size-8'} />
+		// 			{hasLabel ? button.label : button.value}
+		// 		</motion.a>
+		// 	)
+		// }
+		
+		
 		if (button.type === 'link') {
-			return (
-				<motion.a
-					key={button.id}
-					href={button.value}
-					target='_blank'
-					{...commonProps}
-					className='card relative flex items-center gap-2 rounded-xl px-3 py-2.5 font-medium whitespace-nowrap'>
-					{hasLabel ? button.label : button.value}
-				</motion.a>
-			)
+		    const Icon = iconMap[button.type];
+		    // 判断标签是否为 qq（忽略大小写，更灵活）
+		    const isQqLabel = button.label?.toLowerCase() === 'qq';
+		
+		    return (
+		        <motion.a
+		            key={button.id}
+		            href={button.value}
+		            target='_blank'
+		            {...commonProps}
+		            // 根据是否是 qq 标签动态调整样式
+		            className={`card relative flex items-center rounded-xl font-medium ${
+		                isQqLabel 
+		                    ? 'justify-center p-1.5' // qq标签：纯图标样式（居中+小内边距）
+		                    : 'gap-2 px-3 py-2.5 whitespace-nowrap' // 其他：原有样式
+		            }`}>
+		            {/* 始终渲染图标（qq标签显示QQ图标，其他显示原有图标） */}
+		            <Icon className='size-8' />
+		            {/* 只有非 qq 标签时，才显示文本/链接字符 */}
+		            {!isQqLabel && (hasLabel ? button.label : button.value)}
+		        </motion.a>
+		    );
 		}
 
 		return (
