@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, memo } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { toast } from 'sonner'
 import { MessageCircle, X } from 'lucide-react'
+import LoadingSVG from '@/svgs/loading.svg'
 
 interface Message {
 	id: string
@@ -422,7 +423,9 @@ export default function GuestbookPage() {
 						在这里留下你的足迹吧 ✨
 					</p>
 					{isLoadingMessages ? (
-						<p className='text-secondary mt-2 text-xs'>加载中...</p>
+						<div className='mt-2 flex items-center justify-center'>
+							<LoadingSVG className='h-6 w-auto' />
+						</div>
 					) : (
 						<p className='text-secondary mt-2 text-xs'>
 							共 {messages.length} 条留言 {messages.length > maxDisplay && `（显示最新 ${maxDisplay} 条）`}
