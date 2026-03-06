@@ -116,7 +116,7 @@
 	{
 		"name": "中风康复训练系统",
 		"year": 2026,
-		"image": "blob:https://www.zxluky.asia/bb685e98-48e6-497b-932d-ab18f75bc21d",
+		"image": "/images/project/a447e9a29a328025.webp",
 		"url": "",
 		"description": "基于 OpenCV 和 MediaPipe 的中风康复训练系统，通过摄像头实时捕捉患者动作，利用姿态识别技术评估训练质量，为患者提供智能化康复训练指导。",
 		"tags": [
