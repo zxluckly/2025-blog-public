@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
 import { X, ZoomIn } from 'lucide-react'
 import { useMarkdownRender } from '@/hooks/use-markdown-render'
-import { useSize } from '@/hooks/use-size'
+import { ScrollTopButton } from '@/components/scroll-top-button'
 import { INIT_DELAY } from '@/consts'
 import type { Project } from '../components/project-card'
 import projectsList from '../list.json'
@@ -14,21 +14,40 @@ export default function ProjectDetailPage() {
 	const params = useParams() as { id?: string | string[] }
 	const projectName = Array.isArray(params?.id) ? decodeURIComponent(params.id[0]) : decodeURIComponent(params?.id || '')
 	const router = useRouter()
-	const { maxSM: isMobile } = useSize()
 
-	const [project, setProject] = useState<Project | null>(null)
+	const [blog, setBlog] = useState<{ project: Project; markdown: string } | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
 	useEffect(() => {
-		const found = (projectsList as Project[]).find(p => p.name === projectName)
-		if (found) {
-			setProject(found)
+		let cancelled = false
+		async function run() {
+			if (!projectName) return
+			try {
+				setLoading(true)
+				const found = (projectsList as Project[]).find(p => p.name === projectName)
+				
+				if (!cancelled && found) {
+					setBlog({
+						project: found,
+						markdown: found.detailMarkdown || ''
+					})
+				}
+			} catch (e: any) {
+				console.error('Failed to load project:', e)
+			} finally {
+				if (!cancelled) {
+					setLoading(false)
+				}
+			}
 		}
-		setLoading(false)
+		run()
+		return () => {
+			cancelled = true
+		}
 	}, [projectName])
 
-	const { content, loading: renderLoading } = useMarkdownRender(project?.detailMarkdown || '')
+	const { content, loading: renderLoading } = useMarkdownRender(blog?.markdown || '')
 
 	const handleBack = () => {
 		router.push('/projects')
@@ -38,7 +57,7 @@ export default function ProjectDetailPage() {
 		return <div className='text-secondary flex h-full items-center justify-center text-sm'>加载中...</div>
 	}
 
-	if (!project) {
+	if (!blog) {
 		return (
 			<div className='flex h-full flex-col items-center justify-center gap-4'>
 				<div className='text-secondary text-sm'>项目不存在</div>
@@ -49,6 +68,8 @@ export default function ProjectDetailPage() {
 		)
 	}
 
+	const project = blog.project
+
 	if (!project.detailMarkdown && !project.detailImages?.length) {
 		return (
 			<div className='flex h-full flex-col items-center justify-center gap-4'>
@@ -58,6 +79,10 @@ export default function ProjectDetailPage() {
 				</button>
 			</div>
 		)
+	}
+
+	if (renderLoading) {
+		return <div className='text-secondary flex h-full items-center justify-center text-sm'>渲染中...</div>
 	}
 
 	return (
@@ -147,17 +172,18 @@ export default function ProjectDetailPage() {
 					)}
 
 					{/* Markdown 文档 */}
-					{project.detailMarkdown && (
+					{blog.markdown && (
 						<div>
 							<h2 className='mb-4 text-xl font-semibold'>项目文档</h2>
-							{renderLoading ? (
-								<div className='text-secondary text-sm'>渲染中...</div>
-							) : (
-								<div className='prose max-w-none'>{content}</div>
-							)}
+							<div className='prose max-w-none'>{content}</div>
 						</div>
 					)}
 				</motion.article>
+
+				{/* 侧边栏 - 回到顶部按钮 */}
+				<div className='sticky flex w-[200px] shrink-0 flex-col items-start gap-4 self-start max-sm:hidden' style={{ top: 24 }}>
+					<ScrollTopButton delay={INIT_DELAY * 1000} />
+				</div>
 
 				{/* 返回按钮 */}
 				<motion.button

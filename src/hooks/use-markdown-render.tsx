@@ -19,9 +19,18 @@ export function useMarkdownRender(markdown: string): MarkdownRenderResult {
 		let cancelled = false
 
 		async function render() {
+			// Skip rendering if markdown is empty
+			if (!markdown) {
+				setLoading(false)
+				setContent(null)
+				setToc([])
+				return
+			}
+
 			setLoading(true)
 			try {
 				const { html, toc } = await renderMarkdown(markdown)
+				
 				if (!cancelled) {
 					// Extract pre elements and replace with placeholders before parsing
 					const codeBlocks: Array<{ placeholder: string; code: string; preHtml: string }> = []
