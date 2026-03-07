@@ -1,5 +1,18 @@
 [
   {
+    "slug": "mediapipe-0.10x",
+    "title": "姿态识别技术心得",
+    "tags": [
+      "问题总结",
+      "技术分享"
+    ],
+    "date": "2026-03-06T22:58",
+    "summary": "TensorFlow，mediapipe使用心得",
+    "cover": "/blogs/mediapipe-0.10x/32ec8bd00c588a42.webp",
+    "hidden": false,
+    "category": "总结"
+  },
+  {
     "slug": "ai-chat",
     "title": "更新ai对话功能",
     "tags": [
