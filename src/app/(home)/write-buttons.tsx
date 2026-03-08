@@ -17,6 +17,7 @@ export default function WriteButton() {
 	const styles = cardStyles.writeButtons
 	const hiCardStyles = cardStyles.hiCard
 	const clockCardStyles = cardStyles.clockCard
+	const hideEditButton = siteContent.hideEditButton ?? false
 
 	const [show, setShow] = useState(false)
 
@@ -56,15 +57,17 @@ export default function WriteButton() {
 					<PenSVG />
 					<span>写文章</span>
 				</motion.button>
-				<motion.button
-					initial={{ opacity: 0, scale: 0.6 }}
-					animate={{ opacity: 1, scale: 1 }}
-					whileHover={{ scale: 1.05 }}
-					whileTap={{ scale: 0.95 }}
-					onClick={() => setConfigDialogOpen(true)}
-					className='p-2'>
-					<DotsSVG className='h-6 w-6' />
-				</motion.button>
+				{!hideEditButton && (
+					<motion.button
+						initial={{ opacity: 0, scale: 0.6 }}
+						animate={{ opacity: 1, scale: 1 }}
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						onClick={() => setConfigDialogOpen(true)}
+						className='p-2'>
+						<DotsSVG className='h-6 w-6' />
+					</motion.button>
+				)}
 			</motion.div>
 		</HomeDraggableLayer>
 	)

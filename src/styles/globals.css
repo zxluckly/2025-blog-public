@@ -16,6 +16,7 @@
 	html {
 		@apply text-primary bg-bg h-full leading-tight;
 		scroll-behavior: smooth;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Ma Shan Zheng';
 	}
 
 	body {
