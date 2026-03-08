@@ -401,7 +401,7 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 								<div className='text-secondary flex h-full flex-col items-center justify-center text-center'>
 									<div className='space-y-4'>
 										<div>
-											<p className='text-lg'>你好！我是ZX的助手</p>
+											<p className='text-lg'>你好！我是真寻的助手</p>
 											<p className='mt-2 text-sm'>可以问我关于这个网站和作者的问题</p>
 											<p className='mt-1 text-sm'>也可以上传图片让我帮你分析哦～</p>
 										</div>
