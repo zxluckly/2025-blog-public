@@ -48,11 +48,6 @@ export default function Videos2Page() {
 				>
 					其它视频
 				</motion.h1>
-				// <p className='text-secondary mb-8 text-sm'>
-				// 	将文件放在 public/videos2 下，可直接通过{' '}
-				// 	<code className='rounded bg-black/5 px-1.5 py-0.5 text-xs'>/videos2/文件名.mp4</code>{' '}
-				// 	访问；本页为列表预览。
-				// </p>
 
 				{videos.length === 0 ? (
 					<div className='text-secondary flex min-h-[60vh] items-center justify-center text-center text-sm'>
