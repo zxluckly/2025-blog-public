@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
 import Card from '@/components/card'
 import { useCenterStore } from '@/hooks/use-center'
 import { useConfigStore } from './stores/config-store'
@@ -18,7 +18,7 @@ type ShareItem = {
 	stars: number
 }
 
-export default function ShareCard() {
+function ShareCard() {
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
 	const [randomItem, setRandomItem] = useState<ShareItem | null>(null)
@@ -68,3 +68,5 @@ export default function ShareCard() {
 		</HomeDraggableLayer>
 	)
 }
+
+export default memo(ShareCard)

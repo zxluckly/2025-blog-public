@@ -1,12 +1,12 @@
 import { ANIMATION_DELAY } from '@/consts'
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
 import { useConfigStore } from './stores/config-store'
 import { useCenterStore } from '@/hooks/use-center'
 import { useSize } from '@/hooks/use-size'
 import { HomeDraggableLayer } from './home-draggable-layer'
 
-export default function HatCard() {
+function HatCard() {
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
 	const { maxSM } = useSize()
@@ -63,3 +63,5 @@ export default function HatCard() {
 		</HomeDraggableLayer>
 	)
 }
+
+export default memo(HatCard)

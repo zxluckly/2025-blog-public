@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useCenterStore } from '@/hooks/use-center'
 import Card from '@/components/card'
 import { useConfigStore } from './stores/config-store'
@@ -31,7 +32,7 @@ function getGreeting() {
 // 	}
 // }
 
-export default function HiCard() {
+function HiCard() {
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
 	const greeting = getGreeting()
@@ -97,3 +98,5 @@ export default function HiCard() {
 	// 	</HomeDraggableLayer>
 	// )
 }
+
+export default memo(HiCard)

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import Card from '@/components/card'
 import { useCenterStore } from '@/hooks/use-center'
 import { useLatestBlog } from '@/hooks/use-blog-index'
@@ -7,7 +8,7 @@ import dayjs from 'dayjs'
 import Link from 'next/link'
 import { HomeDraggableLayer } from './home-draggable-layer'
 
-export default function ArticleCard() {
+function ArticleCard() {
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
 	const { blog, loading } = useLatestBlog()
@@ -60,3 +61,5 @@ export default function ArticleCard() {
 		</HomeDraggableLayer>
 	)
 }
+
+export default memo(ArticleCard)

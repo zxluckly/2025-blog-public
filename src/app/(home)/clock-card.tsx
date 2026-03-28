@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import Card from '@/components/card'
 import { useCenterStore } from '@/hooks/use-center'
@@ -9,7 +9,7 @@ import { useLayoutEditStore } from './stores/layout-edit-store'
 import { CARD_SPACING } from '@/consts'
 import { HomeDraggableLayer } from './home-draggable-layer'
 
-export default function ClockCard() {
+function ClockCard() {
 	const router = useRouter()
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
@@ -78,6 +78,8 @@ export default function ClockCard() {
 		</HomeDraggableLayer>
 	)
 }
+
+export default memo(ClockCard)
 
 interface SevenSegmentDigitProps {
 	value: number

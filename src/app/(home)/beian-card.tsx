@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import Card from '@/components/card'
 import { useCenterStore } from '@/hooks/use-center'
 import { useConfigStore } from './stores/config-store'
@@ -5,7 +6,7 @@ import { CARD_SPACING } from '@/consts'
 import Link from 'next/link'
 import { HomeDraggableLayer } from './home-draggable-layer'
 
-export default function BeianCard() {
+function BeianCard() {
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
 	const styles = cardStyles.beianCard
@@ -35,3 +36,5 @@ export default function BeianCard() {
 		</HomeDraggableLayer>
 	)
 }
+
+export default memo(BeianCard)

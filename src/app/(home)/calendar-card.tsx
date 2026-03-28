@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import Card from '@/components/card'
 import { useCenterStore } from '@/hooks/use-center'
 import { useConfigStore } from './stores/config-store'
@@ -9,7 +10,7 @@ import { HomeDraggableLayer } from './home-draggable-layer'
 
 dayjs.locale('zh-cn')
 
-export default function CalendarCard() {
+function CalendarCard() {
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
 	const now = dayjs()
@@ -70,5 +71,7 @@ export default function CalendarCard() {
 		</HomeDraggableLayer>
 	)
 }
+
+export default memo(CalendarCard)
 
 const dates = ['一', '二', '三', '四', '五', '六', '日']

@@ -16,7 +16,7 @@ import ZhihuSVG from '@/svgs/知乎.svg'
 import BilibiliSVG from '@/svgs/哔哩哔哩.svg'
 import QqSVG from '@/svgs/qq.svg'
 import { motion, AnimatePresence } from 'motion/react'
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo, useRef, memo } from 'react'
 import type React from 'react'
 import { toast } from 'sonner'
 import { useSize } from '@/hooks/use-size'
@@ -48,7 +48,7 @@ interface SocialButtonConfig {
 	order: number
 }
 
-export default function SocialButtons() {
+function SocialButtons() {
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
 	const { maxSM, init } = useSize()
@@ -296,3 +296,5 @@ export default function SocialButtons() {
 		</HomeDraggableLayer>
 	)
 }
+
+export default memo(SocialButtons)

@@ -1,5 +1,8 @@
 'use client'
 
+import dynamic from 'next/dynamic'
+import { useEffect } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import HiCard from '@/app/(home)/hi-card'
 import ArtCard from '@/app/(home)/art-card'
 import ClockCard from '@/app/(home)/clock-card'
@@ -17,13 +20,20 @@ import { motion } from 'motion/react'
 import { useLayoutEditStore } from './stores/layout-edit-store'
 import { useConfigStore } from './stores/config-store'
 import { toast } from 'sonner'
-import ConfigDialog from './config-dialog/index'
-import { useEffect } from 'react'
-import SnowfallBackground from '@/layout/backgrounds/snowfall'
+
+const ConfigDialog = dynamic(() => import('./config-dialog/index'), { ssr: false })
+const SnowfallBackground = dynamic(() => import('@/layout/backgrounds/snowfall'), { ssr: false })
 
 export default function Home() {
-	const { maxSM } = useSize()
-	const { cardStyles, configDialogOpen, setConfigDialogOpen, siteContent } = useConfigStore()
+	const maxSM = useSize(s => s.maxSM)
+	const { cardStyles, configDialogOpen, setConfigDialogOpen, siteContent } = useConfigStore(
+		useShallow(s => ({
+			cardStyles: s.cardStyles,
+			configDialogOpen: s.configDialogOpen,
+			setConfigDialogOpen: s.setConfigDialogOpen,
+			siteContent: s.siteContent
+		}))
+	)
 	const editing = useLayoutEditStore(state => state.editing)
 	const saveEditing = useLayoutEditStore(state => state.saveEditing)
 	const cancelEditing = useLayoutEditStore(state => state.cancelEditing)
@@ -86,7 +96,7 @@ export default function Home() {
 				{!maxSM && cardStyles.shareCard?.enabled !== false && <ShareCard />}
 				{cardStyles.articleCard?.enabled !== false && <AritcleCard />}
 				{!maxSM && cardStyles.writeButtons?.enabled !== false && <WriteButtons />}
-				
+
 				{/* 移动端：留言板和 Like 按钮并排显示 */}
 				{maxSM && (
 					<div className='flex items-center gap-6'>
@@ -94,11 +104,11 @@ export default function Home() {
 						{cardStyles.likePosition?.enabled !== false && <LikePosition />}
 					</div>
 				)}
-				
+
 				{/* 桌面端：正常显示 */}
 				{!maxSM && cardStyles.likePosition?.enabled !== false && <LikePosition />}
 				{!maxSM && cardStyles.guestbookCard?.enabled !== false && <GuestbookCard />}
-				
+
 				{cardStyles.hatCard?.enabled !== false && <HatCard />}
 				{cardStyles.beianCard?.enabled !== false && <BeianCard />}
 			</div>

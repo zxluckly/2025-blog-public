@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, memo } from 'react'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
 import Card from '@/components/card'
@@ -11,7 +11,7 @@ import { HomeDraggableLayer } from './home-draggable-layer'
 import { MessageCircle } from 'lucide-react'
 import { useSize } from '@/hooks/use-size'
 
-export default function GuestbookCard() {
+function GuestbookCard() {
 	const router = useRouter()
 	const center = useCenterStore()
 	const { cardStyles } = useConfigStore()
@@ -67,3 +67,5 @@ export default function GuestbookCard() {
 		</HomeDraggableLayer>
 	)
 }
+
+export default memo(GuestbookCard)

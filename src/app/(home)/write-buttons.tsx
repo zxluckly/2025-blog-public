@@ -1,7 +1,7 @@
 import { ANIMATION_DELAY, CARD_SPACING } from '@/consts'
 import PenSVG from '@/svgs/pen.svg'
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
 import { useConfigStore } from './stores/config-store'
 import { useCenterStore } from '@/hooks/use-center'
 import { useRouter } from 'next/navigation'
@@ -9,7 +9,7 @@ import { useSize } from '@/hooks/use-size'
 import DotsSVG from '@/svgs/dots.svg'
 import { HomeDraggableLayer } from './home-draggable-layer'
 
-export default function WriteButton() {
+function WriteButton() {
 	const center = useCenterStore()
 	const { cardStyles, setConfigDialogOpen, siteContent } = useConfigStore()
 	const { maxSM } = useSize()
@@ -72,3 +72,5 @@ export default function WriteButton() {
 		</HomeDraggableLayer>
 	)
 }
+
+export default memo(WriteButton)

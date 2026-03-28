@@ -23,6 +23,10 @@ interface TagPosition {
 	top: number
 	duration: number
 	delay: number
+	/** 仅首段：随机水平起点，覆盖视口宽度（vw） */
+	initialX: string
+	/** 与 initialX 对应的数值（vw），用于按路程缩放首段时长 */
+	initialXvw: number
 }
 
 interface DanmakuTagsProps {
@@ -40,6 +44,13 @@ function isOverlapping(pos1: TagPosition, pos2: TagPosition, tagHeight: number =
 	return Math.abs(pos1.top - pos2.top) < (tagHeight + verticalGap)
 }
 
+/** 首段：与「从 100vw 到 -100%」同量纲的近似路程（vw），用于按比例缩 duration，避免左侧路程短却用满 30–60s 导致视速度极慢 */
+function approximateFirstPhaseSpanVw(initialXvw: number): number {
+	return Math.max(0.1, initialXvw + 110)
+}
+
+const FIRST_PHASE_REF_SPAN_VW = approximateFirstPhaseSpanVw(100) // 与原先统一从右侧出发时同量级
+
 // 生成不重叠的随机位置
 function generatePositions(tagTexts: string[]): TagPosition[] {
 	const positions: TagPosition[] = []
@@ -52,11 +63,16 @@ function generatePositions(tagTexts: string[]): TagPosition[] {
 		let position: TagPosition | null = null
 
 		while (attempts < maxAttempts) {
+			// 首帧随机水平分布全屏（略超出左右边缘，避免挤在右侧）
+			const initialXvw = Math.random() * 130 - 30
+			const initialX = `${initialXvw}vw`
 			const candidatePosition: TagPosition = {
 				tag: { text, color: getRandomColor() },
 				top: minTop + Math.random() * (maxTop - minTop),
-				duration: 30 + Math.random() * 30, // 30-60秒
-				delay: Math.random() * 10 // 0-10秒延迟
+				duration: 30 + Math.random() * 30, // 30-60秒（循环段；首段会按路程比例缩短）
+				delay: Math.random() * 10, // 保留生成逻辑；首段与循环段 transition 均为 delay 0（与原无限循环一致）
+				initialX,
+				initialXvw
 			}
 
 			// 检查是否与已有位置重叠
@@ -74,11 +90,14 @@ function generatePositions(tagTexts: string[]): TagPosition[] {
 		if (position) {
 			positions.push(position)
 		} else {
+			const initialXvw = Math.random() * 130 - 30
 			positions.push({
 				tag: { text, color: getRandomColor() },
 				top: minTop + Math.random() * (maxTop - minTop),
 				duration: 30 + Math.random() * 30,
-				delay: Math.random() * 10
+				delay: Math.random() * 10,
+				initialX: `${initialXvw}vw`,
+				initialXvw
 			})
 		}
 	}
@@ -100,6 +119,51 @@ const defaultTagTexts = [
   'Git', 'Docker', 'Linux', 'Nginx', '阿里云', 'Vercel', 'Github API',
 ]
 
+function DanmakuTag({ position }: { position: TagPosition }) {
+	const [loopFromRight, setLoopFromRight] = useState(false)
+
+	const firstPhaseDuration = useMemo(() => {
+		const span = approximateFirstPhaseSpanVw(position.initialXvw)
+		return position.duration * (span / FIRST_PHASE_REF_SPAN_VW)
+	}, [position.duration, position.initialXvw])
+
+	return (
+		<motion.div
+			key={loopFromRight ? 'loop' : 'first'}
+			className='absolute flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 backdrop-blur-sm'
+			style={{
+				top: `${position.top}%`,
+				borderColor: `${position.tag.color}30`,
+				backgroundColor: `${position.tag.color}10`
+			}}
+			initial={{ x: loopFromRight ? '100vw' : position.initialX }}
+			animate={{ x: '-100%' }}
+			transition={{
+				duration: loopFromRight ? position.duration : firstPhaseDuration,
+				ease: 'linear',
+				delay: 0,
+				...(loopFromRight ? { repeat: Infinity } : {})
+			}}
+			onAnimationComplete={() => {
+				if (!loopFromRight) {
+					setLoopFromRight(true)
+				}
+			}}
+		>
+			<div className='h-2 w-2 rounded-full' style={{ backgroundColor: position.tag.color }} />
+			<span
+				className='whitespace-nowrap text-sm font-medium'
+				style={{
+					color: position.tag.color,
+					textShadow: `0 0 10px ${position.tag.color}40`
+				}}
+			>
+				{position.tag.text}
+			</span>
+		</motion.div>
+	)
+}
+
 export default function DanmakuTags({ tags = defaultTagTexts }: DanmakuTagsProps) {
 	const [mounted, setMounted] = useState(false)
 
@@ -115,37 +179,7 @@ export default function DanmakuTags({ tags = defaultTagTexts }: DanmakuTagsProps
 	return (
 		<div className='pointer-events-none fixed inset-0 -z-10 overflow-hidden opacity-40 max-sm:opacity-20'>
 			{positions.map((position, index) => (
-				<motion.div
-					key={index}
-					className='absolute flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 backdrop-blur-sm'
-					style={{
-						top: `${position.top}%`,
-						borderColor: `${position.tag.color}30`,
-						backgroundColor: `${position.tag.color}10`
-					}}
-					initial={{ x: '100vw' }}
-					animate={{ x: '-100%' }}
-					transition={{
-						duration: position.duration,
-						repeat: Infinity,
-						ease: 'linear',
-						delay: position.delay
-					}}
-				>
-					<div
-						className='h-2 w-2 rounded-full'
-						style={{ backgroundColor: position.tag.color }}
-					/>
-					<span 
-						className='whitespace-nowrap text-sm font-medium' 
-						style={{ 
-							color: position.tag.color,
-							textShadow: `0 0 10px ${position.tag.color}40`
-						}}
-					>
-						{position.tag.text}
-					</span>
-				</motion.div>
+				<DanmakuTag key={index} position={position} />
 			))}
 		</div>
 	)

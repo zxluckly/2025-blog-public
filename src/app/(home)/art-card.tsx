@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import Card from '@/components/card'
 import { useCenterStore } from '@/hooks/use-center'
 import { useConfigStore } from './stores/config-store'
@@ -5,7 +6,7 @@ import { CARD_SPACING } from '@/consts'
 import { useRouter } from 'next/navigation'
 import { HomeDraggableLayer } from './home-draggable-layer'
 
-export default function ArtCard() {
+function ArtCard() {
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
 	const router = useRouter()
@@ -39,3 +40,5 @@ export default function ArtCard() {
 		</HomeDraggableLayer>
 	)
 }
+
+export default memo(ArtCard)

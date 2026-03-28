@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import LikeButton from '@/components/like-button'
 import { ANIMATION_DELAY, CARD_SPACING } from '@/consts'
 import { motion } from 'motion/react'
@@ -5,7 +6,7 @@ import { useCenterStore } from '@/hooks/use-center'
 import { useConfigStore } from './stores/config-store'
 import { HomeDraggableLayer } from './home-draggable-layer'
 
-export default function LikePosition() {
+function LikePosition() {
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
 	const styles = cardStyles.likePosition
@@ -40,3 +41,5 @@ export default function LikePosition() {
 		</HomeDraggableLayer>
 	)
 }
+
+export default memo(LikePosition)

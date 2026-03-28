@@ -13,7 +13,8 @@ type LikeButtonProps = {
 	delay?: number
 }
 
-const ENDPOINT = 'https://blog-liker.yysuni1001.workers.dev/api/like'
+/** 与 `/api/guestbook` 相同 Upstash Redis（KV_*）；无 Redis 时回退 `public/likes.json` */
+const ENDPOINT = '/api/likes'
 
 export default function LikeButton({ slug = 'yysuni', delay, className }: LikeButtonProps) {
 	slug = BLOG_SLUG_KEY + slug
