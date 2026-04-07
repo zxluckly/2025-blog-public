@@ -145,7 +145,7 @@
 	{
 		"name": "郑州租房数据分析系统",
 		"year": 2026,
-		"image": "blob:https://www.zxlucky.top/d030e5cd-64d6-46b4-a95b-e9a034c5c290",
+		"image": "/images/project/fe1fa707e185a442.webp",
 		"url": "",
 		"description": "一个基于 Flask、Pandas、Pyecharts 和 Three.js 的租房数据分析可视化项目，围绕郑州租房房源数据完成数据采集、清洗、统计分析、图表展示、3D 地图交互和房源筛选查询。\n项目当前已经内置一份抓取后的郑州租房 CSV 数据，启动后即可直接查看分析结果，无需先重新爬虫。",
 		"tags": [
