@@ -108,12 +108,15 @@ const extractTicketInfo = (description?: string, uploadedAt?: string) => {
 	const date = uploadedAt ? new Date(uploadedAt) : null
 	const year = date && !Number.isNaN(date.getTime()) ? date.getFullYear() : new Date().getFullYear()
 	const month = date && !Number.isNaN(date.getTime()) ? date.getMonth() + 1 : new Date().getMonth() + 1
+	const day = date && !Number.isNaN(date.getTime()) ? String(date.getDate()).padStart(2, '0') : '01'
+	const hours = date && !Number.isNaN(date.getTime()) ? String(date.getHours()).padStart(2, '0') : '00'
+	const minutes = date && !Number.isNaN(date.getTime()) ? String(date.getMinutes()).padStart(2, '0') : '00'
 	let location = 'travel'
 	if (description) {
 		const firstPart = description.split(/[\s，。,.、！!？?]/)[0]
 		location = firstPart.length > 4 ? firstPart.slice(0, 4) : firstPart || 'travel'
 	}
-	return { year, month, location }
+	return { year, month, day, hours, minutes, location }
 }
 
 // Simple SVG barcode
@@ -134,11 +137,11 @@ const Barcode = ({ width = 82, height = 22 }: { width?: number; height?: number 
 
 // Perforated divider between image and stub
 const PerforatedDivider = ({ height }: { height: number }) => (
-	<div style={{ width: 18, flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+	<div style={{ width: 18, flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #f5ede0)',}}>
 		{/* top notch */}
-		<div style={{ position: 'absolute', top: -6, left: 3, width: 12, height: 12, borderRadius: '50%', background: 'rgba(180,170,155,0.35)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.18)' }} />
+		<div style={{ position: 'absolute', top: -11, left: 0, width: 18, height: 18, borderRadius: '50%', background: 'rgba(180,170,155,0.35)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.18)' }} />
 		{/* bottom notch */}
-		<div style={{ position: 'absolute', bottom: -6, left: 3, width: 12, height: 12, borderRadius: '50%', background: 'rgba(180,170,155,0.35)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.18)' }} />
+		<div style={{ position: 'absolute', bottom: -11, left: 0, width: 18, height: 18, borderRadius: '50%', background: 'rgba(180,170,155,0.35)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.18)' }} />
 		{/* dashed line with dots */}
 		<svg width='2' height={height - 16} style={{ display: 'block' }}>
 			<line x1='1' y1='0' x2='1' y2={height - 16} stroke='#b8b0a0' strokeWidth='1.5' strokeDasharray='3 3' />
@@ -164,7 +167,7 @@ const TicketCard = ({
 	pictureId: string
 	imageIndex: number | 'single'
 }) => {
-	const { year, month, location } = extractTicketInfo(description, uploadedAt)
+	const { year, month, day, hours, minutes, location } = extractTicketInfo(description, uploadedAt)
 
 	return (
 		<div
@@ -215,7 +218,7 @@ const TicketCard = ({
 				<div style={{ position: 'absolute', top: 6, right: 6, width: 20, height: 20, borderRadius: '50%', background: 'radial-gradient(circle, rgba(180,210,170,0.35) 0%, transparent 70%)', pointerEvents: 'none' }} />
 				<div style={{ position: 'absolute', bottom: 28, left: 4, width: 14, height: 14, borderRadius: '50%', background: 'radial-gradient(circle, rgba(210,185,150,0.3) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-				<div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+				<div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center', marginLeft: -15}}>
 					<div style={{ fontSize: 8, letterSpacing: 1.5, color: '#8a7a65', fontFamily: 'serif', fontWeight: 600 }}>NO.{year}</div>
 					<div style={{ width: '80%', height: 0.6, background: '#d4c4a8' }} />
 					<div style={{ fontSize: 13, letterSpacing: 0.5, color: '#3a3028', fontFamily: 'Georgia, serif', fontWeight: 700, textAlign: 'center', lineHeight: 1.2, maxWidth: STUB_W - 16, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{location}</div>
@@ -227,10 +230,10 @@ const TicketCard = ({
 				</div>
 
 				{/* Barcode */}
-				<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+				<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, marginLeft: -15}}>
 					<Barcode width={STUB_W * 0.8} height={18} />
 					<div style={{ fontSize: 6, color: '#b0a090', letterSpacing: 0.5, fontFamily: 'monospace' }}>
-						{year}{String(month).padStart(2, '0')}0001
+						{year}{String(month).padStart(2, '0')}{day}{hours}
 					</div>
 				</div>
 			</div>
