@@ -139,9 +139,9 @@ const Barcode = ({ width = 82, height = 22 }: { width?: number; height?: number 
 const PerforatedDivider = ({ height }: { height: number }) => (
 	<div style={{ width: 18, flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #f5ede0)',}}>
 		{/* top notch */}
-		<div style={{ position: 'absolute', top: -11, left: 0, width: 18, height: 18, borderRadius: '50%', background: 'rgba(180,170,155,0.35)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.18)' }} />
+		<div style={{ position: 'absolute', top: -9, left: 1, width: 16, height: 16, borderRadius: '50%', background: 'rgba(180,170,155,0.35)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.18)' }} />
 		{/* bottom notch */}
-		<div style={{ position: 'absolute', bottom: -11, left: 0, width: 18, height: 18, borderRadius: '50%', background: 'rgba(180,170,155,0.35)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.18)' }} />
+		<div style={{ position: 'absolute', bottom: -9, left: 1, width: 16, height: 16, borderRadius: '50%', background: 'rgba(180,170,155,0.35)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.18)' }} />
 		{/* dashed line with dots */}
 		<svg width='2' height={height - 16} style={{ display: 'block' }}>
 			<line x1='1' y1='0' x2='1' y2={height - 16} stroke='#b8b0a0' strokeWidth='1.5' strokeDasharray='3 3' />
