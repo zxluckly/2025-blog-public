@@ -6,6 +6,7 @@ import { useCenterInit, useCenterStore } from '@/hooks/use-center'
 import { Picture } from '../page'
 import { cn } from '@/lib/utils'
 import { useSize } from '@/hooks/use-size'
+import dayjs from 'dayjs'
 
 interface RandomLayoutProps {
 	pictures: Picture[]
@@ -137,12 +138,7 @@ const Barcode = ({ width = 82, height = 22 }: { width?: number; height?: number 
 
 // Perforated divider between image and stub
 const PerforatedDivider = ({ height }: { height: number }) => (
-	<div style={{ width: 18, flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #f5ede0)',}}>
-		{/* top notch */}
-		<div style={{ position: 'absolute', top: -9, left: 1, width: 16, height: 16, borderRadius: '50%', background: 'rgba(180,170,155,0.35)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.18)' }} />
-		{/* bottom notch */}
-		<div style={{ position: 'absolute', bottom: -9, left: 1, width: 16, height: 16, borderRadius: '50%', background: 'rgba(180,170,155,0.35)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.18)' }} />
-		{/* dashed line with dots */}
+	<div style={{ width: 18, flexShrink: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #f5ede0)' }}>
 		<svg width='2' height={height - 16} style={{ display: 'block' }}>
 			<line x1='1' y1='0' x2='1' y2={height - 16} stroke='#b8b0a0' strokeWidth='1.5' strokeDasharray='3 3' />
 		</svg>
@@ -169,16 +165,19 @@ const TicketCard = ({
 }) => {
 	const { year, month, day, hours, minutes, location } = extractTicketInfo(description, uploadedAt)
 
+	// clip-path 实现顶部/底部真实半圆缺口，drop-shadow 跟随裁切形状
+	const ticketPath = `M 14,0 L 196,0 A 8,8 0 0,0 212,0 L 296,0 Q 310,0 310,14 L 310,154 Q 310,168 296,168 L 212,168 A 8,8 0 0,0 196,168 L 14,168 Q 0,168 0,154 L 0,14 Q 0,0 14,0 Z`
+
 	return (
+		<div style={{ width: TICKET_W, height: TICKET_H, position: 'relative', filter: 'drop-shadow(3px 6px 18px rgba(80,60,30,0.18)) drop-shadow(0 1px 4px rgba(80,60,30,0.10))' }}>
 		<div
 			style={{
 				width: TICKET_W,
 				height: TICKET_H,
 				display: 'flex',
 				flexDirection: 'row',
-				borderRadius: 14,
 				overflow: 'hidden',
-				boxShadow: `3px 6px 18px rgba(80,60,30,0.18), 0 1px 4px rgba(80,60,30,0.10), inset 0 1px 0 rgba(255,255,255,0.6)`,
+				clipPath: `path('${ticketPath}')`,
 				background: '#f5ede0',
 				position: 'relative',
 			}}
@@ -238,23 +237,24 @@ const TicketCard = ({
 				</div>
 			</div>
 
-			{/* edit mode delete button */}
-			{isEditMode && (
-				<motion.button
-					initial={{ opacity: 0, scale: 0.8 }}
-					animate={{ opacity: 1, scale: 1 }}
-					onClick={e => {
-						e.stopPropagation()
-						onDeleteSingle?.(pictureId, imageIndex)
-					}}
-					onMouseUp={e => { e.stopPropagation() }}
-					className='absolute -top-2 -right-2 rounded-full bg-red-500 p-1.5 shadow-lg hover:scale-105 hover:bg-red-600'
-					style={{ zIndex: 1 }}>
-					<svg xmlns='http://www.w3.org/2000/svg' className='h-3 w-3 text-white' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-						<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
-					</svg>
-				</motion.button>
-			)}
+		</div>
+		{/* edit mode delete button — 在 clip-path 外层，避免被裁切 */}
+		{isEditMode && (
+			<motion.button
+				initial={{ opacity: 0, scale: 0.8 }}
+				animate={{ opacity: 1, scale: 1 }}
+				onClick={e => {
+					e.stopPropagation()
+					onDeleteSingle?.(pictureId, imageIndex)
+				}}
+				onMouseUp={e => { e.stopPropagation() }}
+				className='absolute -top-2 -right-2 rounded-full bg-red-500 p-1.5 shadow-lg hover:scale-105 hover:bg-red-600'
+				style={{ zIndex: 1 }}>
+				<svg xmlns='http://www.w3.org/2000/svg' className='h-3 w-3 text-white' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+					<path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+				</svg>
+			</motion.button>
+		)}
 		</div>
 	)
 }

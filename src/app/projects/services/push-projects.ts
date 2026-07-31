@@ -13,6 +13,8 @@ export type PushProjectsParams = {
 	detailImageFiles?: Map<string, File[]>
 }
 
+const isBlobUrl = (value?: string) => typeof value === 'string' && value.startsWith('blob:')
+
 export async function pushProjects(params: PushProjectsParams): Promise<void> {
 	const { projects, imageItems, detailImageFiles } = params
 
@@ -90,12 +92,22 @@ export async function pushProjects(params: PushProjectsParams): Promise<void> {
 			updatedProjects = updatedProjects.map(p => {
 				if (p.name === projectName) {
 					// 合并已有的 URL 图片和新上传的图片
-					const existingUrls = (p.detailImages || []).filter(url => url.startsWith('http') || !url.startsWith('blob:'))
+					const existingUrls = (p.detailImages || []).filter(url => !isBlobUrl(url))
 					return { ...p, detailImages: [...existingUrls, ...uploadedUrls] }
 				}
 				return p
 			})
 		}
+	}
+
+	updatedProjects = updatedProjects.map(project => ({
+		...project,
+		detailImages: project.detailImages?.filter(url => !isBlobUrl(url))
+	}))
+
+	const invalidCoverProject = updatedProjects.find(project => isBlobUrl(project.image))
+	if (invalidCoverProject) {
+		throw new Error(`项目「${invalidCoverProject.name}」的封面图片仍是本地预览地址，保存已中止，请重新选择封面图片后再保存。`)
 	}
 
 	const projectsJson = JSON.stringify(updatedProjects, null, '\t')

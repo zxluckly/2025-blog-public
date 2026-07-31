@@ -13,10 +13,15 @@ interface DetailEditDialogProps {
 	onSave: (detailImages: string[], detailMarkdown: string, imageFiles: File[]) => void
 }
 
+type LocalImageItem = {
+	previewUrl: string
+	file: File
+}
+
 export default function DetailEditDialog({ project, onClose, onSave }: DetailEditDialogProps) {
 	const [detailImages, setDetailImages] = useState<string[]>(project.detailImages || [])
 	const [detailMarkdown, setDetailMarkdown] = useState(project.detailMarkdown || '')
-	const [imageFiles, setImageFiles] = useState<File[]>([])
+	const [localImageItems, setLocalImageItems] = useState<LocalImageItem[]>([])
 	const [newImageUrl, setNewImageUrl] = useState('')
 	const [showUrlInput, setShowUrlInput] = useState(false)
 	
@@ -41,7 +46,7 @@ export default function DetailEditDialog({ project, onClose, onSave }: DetailEdi
 			// 创建预览 URL
 			const previewUrl = URL.createObjectURL(file)
 			setDetailImages(prev => [...prev, previewUrl])
-			setImageFiles(prev => [...prev, file])
+			setLocalImageItems(prev => [...prev, { previewUrl, file }])
 		}
 
 		toast.success(`已添加 ${files.length} 张图片`)
@@ -67,17 +72,13 @@ export default function DetailEditDialog({ project, onClose, onSave }: DetailEdi
 
 	const handleRemoveImage = (index: number) => {
 		const imageUrl = detailImages[index]
-		
-		// 如果是本地预览 URL，需要释放
+
+		// 如果是本地预览 URL，需要释放并移除对应的文件
 		if (imageUrl.startsWith('blob:')) {
 			URL.revokeObjectURL(imageUrl)
-			// 同时移除对应的文件
-			const fileIndex = imageFiles.findIndex(f => URL.createObjectURL(f) === imageUrl)
-			if (fileIndex !== -1) {
-				setImageFiles(prev => prev.filter((_, i) => i !== fileIndex))
-			}
+			setLocalImageItems(prev => prev.filter(item => item.previewUrl !== imageUrl))
 		}
-		
+
 		setDetailImages(prev => prev.filter((_, i) => i !== index))
 	}
 
@@ -101,7 +102,7 @@ export default function DetailEditDialog({ project, onClose, onSave }: DetailEdi
 	}
 
 	const handleSave = () => {
-		onSave(detailImages, detailMarkdown, imageFiles)
+		onSave(detailImages, detailMarkdown, localImageItems.map(item => item.file))
 		onClose()
 	}
 
