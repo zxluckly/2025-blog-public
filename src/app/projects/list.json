@@ -172,7 +172,7 @@
 	{
 		"name": "药品采购出入库系统",
 		"year": 2026,
-		"image": "/images/project/4508a69aa9294388.png",
+		"image": "/images/project/177327f136652186.png",
 		"url": "",
 		"description": "本系统是一个面向中医药行业的综合数字化管理平台，集成了人工智能\n图像识别、药品库存管理、采购出入库、AI智能对话、商品搜索比价、\n捐赠管理和通知公告等功能。",
 		"tags": [
@@ -194,8 +194,7 @@
 			"/images/project/e3bde3faa8503a0c.png",
 			"/images/project/ce3080d9bef2cb91.png",
 			"/images/project/bce615b82dc5e8c8.png",
-			"/images/project/4508a69aa9294388.png",
-			"/images/project/177327f136652186.png"
+			"/images/project/4508a69aa9294388.png"
 		],
 		"detailMarkdown": ""
 	}
