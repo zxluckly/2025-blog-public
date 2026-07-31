@@ -170,33 +170,31 @@
 		"detailMarkdown": "# 郑州租房数据分析系统\n\n一个基于 Flask、Pandas、Pyecharts 和 Three.js 的租房数据分析可视化项目，围绕郑州租房房源数据完成数据采集、清洗、统计分析、图表展示、3D 地图交互和房源筛选查询。\n\n项目当前已经内置一份抓取后的郑州租房 CSV 数据，启动后即可直接查看分析结果，无需先重新爬虫。\n\n## 项目效果\n\n项目主要包含 4 类能力：\n\n- 租房数据采集：通过 Selenium 抓取安居客郑州租房列表页数据\n- 数据清洗与特征构建：统一行政区名称，提取租金、面积、楼层、商圈、配套设施、近地铁等字段\n- 数据分析与可视化：生成多种统计指标和图表\n- 交互式展示：提供首页概览、图表页、3D 地图区和房源详情筛选页\n\n## 技术栈\n\n- 后端框架：Flask\n- 数据处理：Pandas、NumPy\n- 文本处理：jieba\n- 图表可视化：Pyecharts、ECharts\n- 3D 地图：Three.js\n- 前端样式：Bootstrap 5\n- 爬虫工具：Selenium\n\n## 项目结构\n\n```text\n.\n├─ app.py                          # Flask 入口，负责页面路由和 API\n├─ data_processor.py               # 数据加载、清洗、统计分析\n├─ chart_generator.py              # Pyecharts 图表配置生成\n├─ requirements.txt                # Python 依赖\n├─ 410100_full.json                # 郑州行政区 GeoJSON 边界文件（当前前端未直接读取本地文件）\n├─ templates/\n│  ├─ base.html                    # 公共布局\n│  ├─ index.html                   # 首页概览\n│  ├─ charts.html                  # 图表分析页\n│  ├─ details.html                 # 房源详情与筛选页\n│  └─ map3d.html                   # 3D 地图页\n├─ static/\n│  ├─ css/\n│  │  └─ map3d.css                 # 3D 地图页样式\n│  └─ js/\n│     └─ map3d.js                  # Three.js 3D 地图逻辑\n└─ spider/\n   ├─ main.py                      # Selenium 爬虫主程序\n   ├─ merge_csv.py                 # CSV 合并脚本\n   └─ 郑州租房数据_20260307_004440.csv  # 当前项目默认使用的数据文件\n```\n\n## 已实现功能\n\n### 1. 首页数据总览\n\n访问 `/` 可查看项目首页，展示当前数据集的核心指标，包括：\n\n- 总房源数量\n- 平均租金\n- 租金中位数\n- 近地铁房源占比\n- 已抓取行政区卡片\n- 装修程度分布\n\n首页中的区域卡片可以直接跳转到该行政区的房源详情页。\n\n### 2. 图表分析页\n\n访问 `/charts` 可以查看多维度统计图表，当前后端提供了以下分析接口：\n\n- `/api/district_price`：各行政区平均租金柱状图\n- `/api/area_price_scatter`：面积与租金散点图\n- `/api/floor_distribution`：楼层分布饼图\n- `/api/decoration_distribution`：装修程度分布饼图\n- `/api/facilities`：热门配套设施柱状图\n- `/api/area_price_line`：不同面积区间的平均租金趋势图\n- `/api/metro_comparison`：近地铁 / 非近地铁租金对比图\n- `/api/district_heatmap`：行政区租金区间热力图\n\n图表页前端通过 `fetch` 请求这些接口，再用 ECharts 渲染图形。\n\n### 3. 3D 地图区\n\n访问 `/map3d` 可以查看郑州行政区 3D 地图。主要特性包括：\n\n- 基于 GeoJSON 真实区域边界生成三维挤出地图\n- 不同区域根据房源数量显示不同颜色深浅和高度\n- 支持鼠标悬停高亮、点击查看区域详情、双击进入详情页\n- 右侧展示区域统计信息，包括：\n- 房源数量\n- 平均租金\n- 租金中位数\n- 平均面积\n- 近地铁比例\n- 热门商圈\n- 装修分布\n- 高租金代表房源\n\n相关接口：\n\n- `/api/map3d/districts`：返回地图总览数据\n- `/api/map3d/district/<slug>`：返回单个区域详情数据\n\n### 4. 房源详情与筛选页\n\n访问 `/details` 可以查看房源列表，并支持组合筛选：\n\n- 行政区筛选\n- 最小面积筛选\n- 最大面积筛选\n- 租金区间筛选\n- 仅看近地铁房源\n\n页面会展示筛选后的总数，并默认渲染前 50 条房源记录。\n\n### 5. 数据采集\n\n`spider/main.py` 使用 Selenium 自动打开租房列表页，抓取每个行政区的房源信息，字段包括：\n\n- 标题\n- 链接\n- 租金\n- 户型\n- 面积\n- 楼层\n- 地址\n- 标签\n- 装修程度\n- 配套设施\n- 近地铁\n- 朝向\n- 行政区\n\n爬虫具备以下处理逻辑：\n\n- 按行政区分页抓取\n- 支持多种 CSS 选择器兼容页面结构变化\n- 针对租金、面积等字段做正则提取\n- 根据标题、租金、地址去重\n- 对异常租金做分位数过滤\n- 最终导出 CSV 文件\n\n## 项目是怎么实现的\n\n### 1. 后端整体流程\n\n项目入口为 [app.py](/e:/Acode/开发/郑州租房/app.py)。\n\n应用启动时会做以下事情：\n\n1. 初始化 Flask 应用\n2. 创建 `RentDataProcessor`\n3. 读取 `spider/郑州租房数据_20260307_004440.csv`\n4. 执行数据清洗和特征构建\n5. 创建 `ChartGenerator`\n6. 对外提供页面路由和 JSON / 图表接口\n\n也就是说，这个项目采用的是“启动即加载数据”的方式，而不是每次请求再重新处理数据，因此页面访问会更快，逻辑也更简单。\n\n### 2. 数据处理模块\n\n核心逻辑在 [data_processor.py](/e:/Acode/开发/郑州租房/data_processor.py)。\n\n#### 数据加载\n\n`load_data()` 直接读取 CSV 到 Pandas DataFrame。\n\n#### 数据清洗\n\n`clean_data()` 是整个分析链路的关键，主要做了这些事情：\n\n- 删除重复记录\n- 将安居客页面中的英文/拼音行政区标识映射为中文行政区名称\n- 从原始租金字段中提取数值型租金 `租金_数值`\n- 从原始面积字段中提取数值型面积 `面积_数值`\n- 把楼层归类为 `低层 / 中层 / 高层 / 未知`\n- 从地址中提取商圈字段\n- 将配套设施拆分成列表，并统计设施数量\n- 将“近地铁”转换为 0/1 标记\n- 过滤无效租金和无效面积数据\n\n#### 数据统计\n\n该模块还提供了多个分析方法，例如：\n\n- `get_statistics()`：首页统计指标\n- `get_price_by_district()`：行政区租金聚合\n- `get_price_by_area_range()`：面积区间租金分析\n- `get_facilities_analysis()`：热门设施统计\n- `get_district_map_data()`：3D 地图区块聚合数据\n- `get_district_detail()`：单个区域详情信息\n\n这些方法统一围绕同一个清洗后的 DataFrame 工作，降低了前后端数据口径不一致的问题。\n\n### 3. 图表生成模块\n\n图表逻辑在 [chart_generator.py](/e:/Acode/开发/郑州租房/chart_generator.py)。\n\n它的职责不是直接返回 HTML，而是把 Pandas 统计结果转换成 Pyecharts 图表对象，再通过：\n\n```python\nchart.dump_options_with_quotes()\n```\n\n把图表配置输出为前端可直接消费的 JSON 字符串。\n\n这样做的好处是：\n\n- 后端负责数据聚合和图表配置\n- 前端只负责请求接口并调用 ECharts 渲染\n- 页面结构和图表数据源解耦，后续更容易扩展新图表\n\n### 4. 3D 地图实现\n\n3D 地图逻辑在 [static/js/map3d.js](/e:/Acode/开发/郑州租房/static/js/map3d.js)。\n\n实现步骤大致如下：\n\n1. 从后端接口 `/api/map3d/districts` 获取各区统计数据\n2. 加载郑州行政区 GeoJSON 边界\n3. 将经纬度投影到前端场景坐标系\n4. 基于 `THREE.Shape + THREE.ExtrudeGeometry` 把二维面挤出为三维模型\n5. 以房源数量控制区域颜色和高度\n6. 使用射线检测处理鼠标悬停、点击、双击交互\n7. 点击后调用 `/api/map3d/district/<slug>` 获取详细统计并更新右侧信息面板\n\n项目中还实现了：\n\n- OrbitControls 轨道控制器，支持旋转、缩放、拖动观察\n- 自定义标签精灵，用于显示当前选中区域名称\n- 灯光、地面、网格辅助视觉层次\n- 区域名称别名映射，解决 GeoJSON 名称与数据名称不一致的问题\n\n### 5. 页面组织方式\n\n模板放在 `templates/` 目录下，采用 Flask 原生 Jinja2 模板：\n\n- `base.html`：统一导航栏、全局样式、Bootstrap 和 ECharts 资源引入\n- `index.html`：首页总览\n- `charts.html`：图表分析页\n- `details.html`：房源筛选和列表展示\n- `map3d.html`：3D 地图页\n\n这种结构适合中小型数据展示项目，开发和部署成本都比较低。\n\n## 数据来源与字段说明\n\n当前默认数据文件为：\n\n- `spider/郑州租房数据_20260307_004440.csv`\n\nCSV 中包含的主要字段有：\n\n- `标题`\n- `链接`\n- `租金`\n- `户型`\n- `面积`\n- `楼层`\n- `地址`\n- `标签`\n- `装修程度`\n- `配套设施`\n- `近地铁`\n- `朝向`\n- `行政区`\n\n清洗后新增的分析字段包括：\n\n- `租金_数值`\n- `面积_数值`\n- `楼层_类型`\n- `商圈`\n- `配套设施_列表`\n- `配套设施_数量`\n- `是否近地铁`\n\n## 安装与运行\n\n### 1. 创建虚拟环境\n\n```powershell\npython -m venv .venv\n```\n\n激活虚拟环境：\n\n```powershell\n.venv\\Scripts\\Activate.ps1\n```\n\n### 2. 安装依赖\n\n```powershell\npip install -r requirements.txt\n```\n\n如果你后续要运行爬虫，还需要额外安装：\n\n- Selenium\n- 本地 Chrome 浏览器\n- 与 Chrome 版本匹配的 ChromeDriver\n\n### 3. 启动项目\n\n```powershell\npython app.py\n```\n\n默认访问地址：\n\n```text\nhttp://127.0.0.1:5000\n```\n\n### 4. 页面入口\n\n- 首页：`/`\n- 图表页：`/charts`\n- 3D 地图页：`/map3d`\n- 房源详情页：`/details`\n\n## 如何重新抓取数据\n\n如果你想重新采集最新的郑州租房数据，可以运行：\n\n```powershell\ncd spider\npython main.py\n```\n\n抓取完成后会导出新的 CSV 文件。若希望 Web 项目读取新文件，需要同步修改 [app.py](/e:/Acode/开发/郑州租房/app.py) 中的这行路径：\n\n```python\nprocessor = RentDataProcessor('spider/郑州租房数据_20260307_004440.csv')\n```\n\n把它改成你新导出的 CSV 文件名即可。\n\n如果有多个 CSV 文件需要合并，可运行：\n\n```powershell\ncd spider\npython merge_csv.py\n```\n\n## 接口说明\n\n### 页面路由\n\n- `GET /`：首页\n- `GET /charts`：图表页\n- `GET /map3d`：3D 地图页\n- `GET /details`：房源详情和筛选页\n\n### 数据接口\n\n- `GET /api/statistics`：总体统计指标\n- `GET /api/district_price`：行政区平均租金图表配置\n- `GET /api/area_price_scatter`：面积租金散点图配置\n- `GET /api/floor_distribution`：楼层分布图表配置\n- `GET /api/decoration_distribution`：装修分布图表配置\n- `GET /api/facilities`：热门设施图表配置\n- `GET /api/area_price_line`：面积区间租金趋势图配置\n- `GET /api/metro_comparison`：近地铁对比图配置\n- `GET /api/district_heatmap`：租金热力图配置\n- `GET /api/map3d/districts`：3D 地图区域概览数据\n- `GET /api/map3d/district/<slug>`：3D 地图区详情数据\n\n## 当前项目的特点\n\n- 不依赖数据库，直接基于 CSV + Pandas 即可完成分析\n- 适合毕业设计、数据展示项目\n- 页面交互完整，同时具备统计图表和 3D 地图展示\n- 数据处理逻辑集中，便于继续扩展新的指标和图表\n\n## 当前需要注意的地方\n\n### 1. 默认数据文件路径是写死的\n\n当前项目启动时固定读取：\n\n`spider/郑州租房数据_20260307_004440.csv`\n\n如果文件名变化，需要手动修改 `app.py`。\n\n### 2. 3D 地图依赖外部 GeoJSON 地址\n\n前端脚本当前默认从：\n\n`https://geo.datav.aliyun.com/areas_v3/bound/410100_full.json`\n\n加载郑州边界数据。\n\n仓库虽然也包含本地的 `410100_full.json`，但当前 `map3d.js` 默认没有改成读取本地文件。如果外网不可访问，3D 地图页面会加载失败。后续可以把它调整为读取本地静态资源。\n\n### 3. 爬虫依赖浏览器环境\n\n重新抓取数据时，需要本机具备：\n\n- Chrome 浏览器\n- 对应版本的 ChromeDriver\n- 可用的 Selenium 运行环境\n\n### 4. 图表模块存在可继续整理空间\n\n当前图表配置已经可以工作，但图表标题、注释和部分源码文本仍有进一步整理和统一的空间，适合下一步继续做代码规范化优化。\n\n## 适合的使用场景\n\n- Python 课程设计\n- Flask 数据可视化项目\n- 房产租赁市场分析练习\n- 毕业设计展示项目\n- 城市租房信息分析 Demo\n\n## 后续可扩展方向\n\n- 接入数据库，替代本地 CSV\n- 支持按时间增量抓取和多批次数据管理\n- 增加更多筛选维度，如户型、朝向、装修程度\n- 增加词云、价格预测、聚类分析等高级分析功能\n- 将本地 GeoJSON 静态化，避免外部网络依赖\n\n## 总结\n\n这个项目已经形成了一条比较完整的链路：\n\n爬虫采集数据 -> Pandas 清洗处理 -> Flask 提供页面和接口 -> Pyecharts / ECharts 做统计图表 -> Three.js 实现 3D 地图交互 -> 最终展示郑州租房市场数据。\n"
 	},
 	{
-		"name": "AI 视觉与管理一体化平台",
+		"name": "药品采购出入库系统",
 		"year": 2026,
-		"image": "blob:https://www.zxlucky.top/db6733a5-34f2-4d37-8e14-84c45824778b",
+		"image": "blob:https://www.zxlucky.top/51da81c1-0862-4d9e-97ef-c95d84c4410d",
 		"url": "",
-		"description": "基于 Django + Vue3 独立开发的全栈 AI 管理系统，后端提供 RESTful API，支持用户权限管理、系统配置、文件管理、实时通知等基础功能模块。集成 YOLOv8 目标检测引擎，通过 WebSocket 实现视频流的实时推理与前端结果推送，支持图片/视频逐帧识别并记录置信度历史。接入图像分类模块，支持多预训练模型动态加载与切换。工具层集成 PySpark + HDFS，具备大数据处理能力扩展。",
+		"description": "本系统是一个面向中医药行业的综合数字化管理平台，集成了人工智能\n图像识别、药品库存管理、采购出入库、AI智能对话、商品搜索比价、\n捐赠管理和通知公告等功能。",
 		"tags": [
-			"Python",
-			"Django REST Framework",
+			"Spring Boot",
+			"MyBatis-Plus",
+			"RuoYi",
+			"Redis",
+			"Django",
+			"DRF",
 			"YOLO",
-			"ResNet",
-			"WebSocket",
-			"Vue3",
-			"MySQL/SQLite",
-			"Spark/Hadoop",
-			"OpenCV"
+			"Vue.js",
+			"Element-UI",
+			"ECharts",
+			"MySQL"
 		],
 		"detailImages": [
-			"/images/project/a07d98da632b6518.png",
-			"/images/project/15bc36c15c363a99.png",
-			"/images/project/dfbec1f86565cf52.png",
-			"/images/project/6c1369b0638a2540.png",
-			"/images/project/2a11b5ec2718be00.png",
-			"/images/project/f20494ac6432d6e0.png",
-			"/images/project/18475fa37b714d35.png",
-			"/images/project/8e29871d0a548af5.png",
-			"/images/project/b566afef71a6670c.png",
-			"/images/project/15bc36c15c363a99.png"
+			"/images/project/249bbbff0e9bdee9.png",
+			"/images/project/d469152d9ebec5c5.png",
+			"/images/project/e3bde3faa8503a0c.png",
+			"/images/project/ce3080d9bef2cb91.png",
+			"/images/project/bce615b82dc5e8c8.png",
+			"/images/project/4508a69aa9294388.png"
 		],
 		"detailMarkdown": ""
 	}
