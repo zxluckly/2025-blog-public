@@ -197,5 +197,34 @@
 			"/images/project/4508a69aa9294388.png"
 		],
 		"detailMarkdown": ""
+	},
+	{
+		"name": " AI 视觉与管理一体化平台",
+		"year": 2026,
+		"image": "/images/project/18475fa37b714d35.png",
+		"url": "",
+		"description": "基于 Django + Vue3 独立开发的全栈 AI 管理系统，后端提供 RESTfulAPI，支持用户权限管理、系统配置、文件管理、实时通知等基础功能模块。集成 YOLOv8 目标检测引擎，通过 WebSocket实现视频流的实时推理与前端结果推送，支持图片/视频逐帧识别并记录置信度历史。接入图像分类模块，支持多预训练模型动态加载与切换。工具层集成 PySpark + HDFS，具备大数据处理能力扩展。",
+		"tags": [
+			"Python",
+			"Django REST Framework",
+			"YOLO",
+			"ResNet",
+			"WebSocket",
+			"Vue3",
+			"MySQL/SQLite",
+			"Spark/Hadoop",
+			"OpenCV"
+		],
+		"detailImages": [
+			"/images/project/dfbec1f86565cf52.png",
+			"/images/project/6c1369b0638a2540.png",
+			"/images/project/2a11b5ec2718be00.png",
+			"/images/project/18475fa37b714d35.png",
+			"/images/project/3a79850492394eb3.png",
+			"/images/project/8e29871d0a548af5.png",
+			"/images/project/b566afef71a6670c.png",
+			"/images/project/15bc36c15c363a99.png"
+		],
+		"detailMarkdown": ""
 	}
 ]
