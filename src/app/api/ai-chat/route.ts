@@ -7,8 +7,7 @@ import siteContent from '@/config/site-content.json'
 export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
-const ARK_API_KEY = '3e45f92f-2c7f-4db6-98b7-79ecb17d773b'
-// const ARK_API_KEY = process.env.ARK_API_KEY
+const ARK_API_KEY = process.env.ARK_API_KEY
 const ARK_MODEL = process.env.ARK_MODEL || 'ep-20250310111028-lvbvn'
 const ARK_API_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions'
 
