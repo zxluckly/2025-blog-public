@@ -228,3 +228,61 @@
 	border: 1px solid rgba(0, 0, 0, 0.08);
 	border-radius: 8px;
 }
+
+.ai-chat-markdown {
+	font-size: inherit;
+	line-height: 1.7;
+	letter-spacing: 0;
+	overflow: visible;
+}
+
+.ai-chat-markdown h1,
+.ai-chat-markdown h2,
+.ai-chat-markdown h3,
+.ai-chat-markdown h4,
+.ai-chat-markdown h5 {
+	margin-top: 0.8em;
+	margin-bottom: 0.6em;
+}
+
+.ai-chat-markdown h1:first-child,
+.ai-chat-markdown h2:first-child,
+.ai-chat-markdown h3:first-child,
+.ai-chat-markdown h4:first-child,
+.ai-chat-markdown h5:first-child,
+.ai-chat-markdown p:first-child {
+	margin-top: 0;
+}
+
+.ai-chat-markdown p:last-child,
+.ai-chat-markdown ul:last-child,
+.ai-chat-markdown ol:last-child,
+.ai-chat-markdown pre:last-child,
+.ai-chat-markdown blockquote:last-child,
+.ai-chat-markdown table:last-child {
+	margin-bottom: 0;
+}
+
+.ai-chat-markdown p {
+	margin: 0.65em 0;
+}
+
+.ai-chat-markdown ul,
+.ai-chat-markdown ol {
+	margin-left: 1.1em;
+}
+
+.ai-chat-markdown pre,
+.ai-chat-markdown .code-block-wrapper {
+	max-width: 100%;
+}
+
+.ai-chat-markdown table {
+	display: block;
+	overflow-x: auto;
+	white-space: nowrap;
+}
+
+.ai-chat-markdown img {
+	max-width: 100%;
+}

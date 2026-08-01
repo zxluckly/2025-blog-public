@@ -7,7 +7,8 @@ import siteContent from '@/config/site-content.json'
 export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
-const ARK_API_KEY = process.env.ARK_API_KEY
+const ARK_API_KEY = '3e45f92f-2c7f-4db6-98b7-79ecb17d773b'
+// const ARK_API_KEY = process.env.ARK_API_KEY
 const ARK_MODEL = process.env.ARK_MODEL || 'ep-20250310111028-lvbvn'
 const ARK_API_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions'
 
@@ -15,21 +16,24 @@ type Project = {
 	name: string
 	year: number
 	image: string
-	url: string
+	url?: string
 	description: string
 	tags: string[]
-	github: string
+	github?: string
+	npm?: string
 	detailImages?: string[]
 	detailMarkdown?: string
 }
 
-type ToolCall = {
-	id: string
-	type: 'function'
-	function: {
-		name: string
-		arguments: string | Record<string, unknown>
-	}
+type ToolResult = {
+	toolName: string
+	result: unknown
+}
+
+type ChatMessage = {
+	role: string
+	content: unknown
+	[key: string]: unknown
 }
 
 const projectList = projects as Project[]
@@ -51,89 +55,78 @@ const RATE_LIMIT = {
 
 const RATE_LIMIT_PREFIX = 'ai-chat:ratelimit:'
 
-const AI_TOOLS = [
-	{
-		type: 'function',
-		function: {
-			name: 'get_all_projects',
-			description: '获取作者项目列表。用于用户询问有哪些项目、项目总览、项目技术栈、项目 GitHub 链接时调用。返回全部项目的摘要信息，不包含 detailMarkdown 和 detailImages。',
-			parameters: {
-				type: 'object',
-				properties: {},
-				required: []
-			}
-		}
-	},
-	{
-		type: 'function',
-		function: {
-			name: 'get_project_detail',
-			description: '按项目名称、关键词或技术栈搜索并获取指定项目详情。用于用户询问某个具体项目的详细介绍、功能、架构、技术栈、截图或 README 内容时调用。返回匹配项目的完整详情，包含 detailMarkdown 和 detailImages。',
-			parameters: {
-				type: 'object',
-				properties: {
-					query: {
-						type: 'string',
-						description: '用户指定的项目名称、关键词或技术栈，例如“慢性病风险预测系统”“Django”“视频库”。'
-					}
-				},
-				required: ['query']
-			}
-		}
-	},
-	{
-		type: 'function',
-		function: {
-			name: 'get_site_content',
-			description: '获取作者主页和站点配置信息。用于用户询问网站名称、网站介绍、作者主页、联系方式、社交链接、GitHub、邮箱、QQ 等信息时调用。',
-			parameters: {
-				type: 'object',
-				properties: {},
-				required: []
-			}
-		}
-	}
-]
-
 function normalizeText(value: string): string {
 	return value.toLowerCase().replace(/\s+/g, '')
+}
+
+function nullableString(value: unknown): string | null {
+	return typeof value === 'string' && value.trim() ? value : null
 }
 
 function getProjectSummary(project: Project) {
 	return {
 		name: project.name,
 		year: project.year,
-		image: project.image,
-		url: project.url,
+		image: nullableString(project.image),
+		url: nullableString(project.url),
 		description: project.description,
-		tags: project.tags,
-		github: project.github
+		tags: project.tags || [],
+		github: nullableString(project.github),
+		npm: nullableString(project.npm)
+	}
+}
+
+function getProjectFull(project: Project) {
+	return {
+		...getProjectSummary(project),
+		detailImages: project.detailImages || [],
+		detailMarkdown: nullableString(project.detailMarkdown)
 	}
 }
 
 function getAllProjects() {
 	return {
+		status: 'success',
 		count: projectList.length,
-		projects: projectList.map(getProjectSummary)
+		projects: projectList.map(getProjectSummary),
+		facts: {
+			projectNames: projectList.map(project => project.name),
+			years: projectList.map(project => project.year),
+			urls: projectList.flatMap(project => [project.url, project.github, project.npm].filter(Boolean))
+		}
 	}
 }
 
 function getProjectDetail(query: string) {
 	const normalizedQuery = normalizeText(query)
 
+	if (!normalizedQuery) {
+		return {
+			status: 'need_query',
+			message: '用户没有提供项目名称或关键词，请让用户补充要查询的项目。',
+			projects: projectList.map(project => ({
+				name: project.name,
+				year: project.year,
+				tags: project.tags || []
+			}))
+		}
+	}
+
 	const exactMatch = projectList.find(project => normalizeText(project.name) === normalizedQuery)
 	if (exactMatch) {
 		return {
-			found: true,
-			project: exactMatch
+			status: 'success',
+			matchedBy: 'exact_name',
+			project: getProjectFull(exactMatch)
 		}
 	}
 
 	const nameMatches = projectList.filter(project => normalizeText(project.name).includes(normalizedQuery))
 	if (nameMatches.length === 1) {
 		return {
-			found: true,
-			project: nameMatches[0]
+			status: 'success',
+			matchedBy: 'partial_name',
+			project: getProjectFull(nameMatches[0])
 		}
 	}
 
@@ -141,7 +134,8 @@ function getProjectDetail(query: string) {
 		const searchable = normalizeText([
 			project.name,
 			project.description,
-			project.github,
+			project.github || '',
+			project.url || '',
 			...(project.tags || [])
 		].join(' '))
 
@@ -150,92 +144,87 @@ function getProjectDetail(query: string) {
 
 	if (contentMatches.length === 1) {
 		return {
-			found: true,
-			project: contentMatches[0]
+			status: 'success',
+			matchedBy: 'content',
+			project: getProjectFull(contentMatches[0])
 		}
 	}
 
 	const candidates = nameMatches.length > 0 ? nameMatches : contentMatches
 
 	return {
-		found: false,
+		status: candidates.length > 0 ? 'multiple_matches' : 'not_found',
 		message: candidates.length > 0
-			? '找到了多个可能匹配的项目，请让用户指定更准确的项目名称。'
+			? '找到了多个可能匹配的项目，请让用户指定更准确的项目名称；不要自行选择。'
 			: '未找到匹配项目，请让用户换一个项目名称或关键词。',
 		candidates: candidates.map(getProjectSummary),
 		allProjects: projectList.map(project => ({
 			name: project.name,
 			year: project.year,
-			tags: project.tags
+			tags: project.tags || []
 		}))
 	}
 }
 
 function getSiteContent() {
-	return siteContent
-}
-
-function parseToolArguments(args: string | Record<string, unknown> | undefined): Record<string, unknown> {
-	if (!args) return {}
-	if (typeof args !== 'string') return args
-
-	try {
-		return JSON.parse(args)
-	} catch {
-		return {}
-	}
-}
-
-function executeToolCall(toolCall: ToolCall) {
-	const toolName = toolCall.function.name
-	const args = parseToolArguments(toolCall.function.arguments)
-
-	switch (toolName) {
-		case 'get_all_projects':
-			return getAllProjects()
-		case 'get_project_detail':
-			return getProjectDetail(String(args.query || ''))
-		case 'get_site_content':
-			return getSiteContent()
-		default:
-			return {
-				error: `未知工具：${toolName}`
-			}
-	}
-}
-
-function createTextStream(content: string) {
-	const encoder = new TextEncoder()
-
-	return new ReadableStream({
-		start(controller) {
-			controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-				choices: [
-					{
-						delta: {
-							content
-						}
-					}
-				]
-			})}\n\n`))
-			controller.enqueue(encoder.encode('data: [DONE]\n\n'))
-			controller.close()
+	const content = siteContent as any
+	return {
+		status: 'success',
+		meta: content.meta,
+		socialButtons: (content.socialButtons || []).map((button: any) => ({
+			id: button.id,
+			type: button.type,
+			value: nullableString(button.value),
+			label: nullableString(button.label),
+			order: button.order
+		})),
+		beian: content.beian,
+		facts: {
+			emails: (content.socialButtons || [])
+				.filter((button: any) => button.type === 'email')
+				.map((button: any) => button.value)
+				.filter(Boolean),
+			urls: (content.socialButtons || [])
+				.filter((button: any) => button.type !== 'email')
+				.map((button: any) => button.value)
+				.filter(Boolean)
 		}
-	})
+	}
 }
 
-function getAssistantText(message: any): string {
-	const content = message?.content
+function getLastUserText(messages: ChatMessage[]): string {
+	const lastUser = [...messages].reverse().find(message => message.role === 'user')
+	const content = lastUser?.content
 
 	if (typeof content === 'string') return content
 	if (Array.isArray(content)) {
 		return content
-			.filter(block => block?.type === 'text' && typeof block.text === 'string')
-			.map(block => block.text)
-			.join('')
+			.map((item: any) => item?.text || '')
+			.filter(Boolean)
+			.join('\n')
 	}
 
 	return ''
+}
+
+function planRequiredTools(userText: string): ToolResult[] {
+	const planned: ToolResult[] = []
+	const text = normalizeText(userText)
+
+	if (/联系|邮箱|email|qq|github|主页|站点|网站|社交|作者/.test(userText)) {
+		planned.push({ toolName: 'get_site_content', result: getSiteContent() })
+	}
+
+	if (/全部项目|项目列表|有哪些项目|项目总览|所有项目|项目展示|技术栈|tech_stack/.test(userText)) {
+		planned.push({ toolName: 'get_all_projects', result: getAllProjects() })
+	}
+
+	const project = projectList.find(item => text.includes(normalizeText(item.name)))
+	if (project) {
+		planned.push({ toolName: 'get_project_detail', result: getProjectDetail(project.name) })
+	}
+
+	return planned
 }
 
 function createStreamResponse(body: ReadableStream<Uint8Array> | null) {
@@ -245,6 +234,47 @@ function createStreamResponse(body: ReadableStream<Uint8Array> | null) {
 			'Cache-Control': 'no-cache',
 			'Connection': 'keep-alive'
 		}
+	})
+}
+
+async function fetchArk(body: Record<string, unknown>) {
+	const response = await fetch(ARK_API_URL, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${ARK_API_KEY}`
+		},
+		body: JSON.stringify(body)
+	})
+
+	if (!response.ok) {
+		const errorText = await response.text()
+		console.error('ARK API Error:', {
+			status: response.status,
+			statusText: response.statusText,
+			body: errorText
+		})
+		throw new Error(`AI 服务请求失败: ${response.statusText}`)
+	}
+
+	return response
+}
+
+function createFactInstruction(toolResults: ToolResult[]) {
+	return `以下是服务端工具返回的唯一可信事实源。你可以总结和组织语言，但事实值必须逐字符引用，尤其是项目名、年份、邮箱、QQ、GitHub、URL、技术栈。缺失字段为 null 时只能说“源数据未提供”，禁止补全或猜测。请输出合法 Markdown，禁止输出原始 HTML。\n\n${JSON.stringify(toolResults, null, 2)}`
+}
+
+async function streamFinalAnswer(messages: ChatMessage[], toolResults: ToolResult[]) {
+	return fetchArk({
+		model: ARK_MODEL,
+		messages: [
+			...messages,
+			{
+				role: 'system',
+				content: createFactInstruction(toolResults)
+			}
+		],
+		stream: true
 	})
 }
 
@@ -343,27 +373,22 @@ function validateOrigin(request: Request): boolean {
 	return false
 }
 
-// 系统提示词 - 简洁版
-const SYSTEM_PROMPT = `你是真寻，ZX的助手。
+const SYSTEM_PROMPT = `你是真寻，ZX 的网站助手。
 
-网站特点：技术博客，插件分享，留言板，项目展示，视频库。
+你可以友好、轻松地总结网站、作者和项目内容，可用颜文字，鼓励用户留言交流。但所有事实都必须来自服务端注入的可信资料或用户本轮明确提供的信息。
 
-作者：新人开发者，喜欢追番、游戏。
-联系：QQ 3190925010，邮箱：haochenwu7@gmail.com
+事实规则：
+- 服务端会在需要时自动注入作者主页、联系方式、项目列表或项目详情等可信资料；你不需要也不能主动输出工具调用。
+- 禁止输出类似 <|FunctionCallBegin|>、<|FunctionCallEnd|>、tool_call、get_site_content、get_all_projects、get_project_detail 的工具调用标记或伪代码。
+- 如果服务端没有注入相关可信资料，不得凭记忆回答联系方式、项目年份、项目名称、邮箱、QQ 或任何 URL。
+- 可信资料中的邮箱、QQ、GitHub、URL、项目名和年份必须逐字符保留，不得缩写、截断、补全、改写或翻译。
+- 可信资料字段为 null、空字符串或未提供时，只能说明“源数据未提供”，不得自行生成。
+- 多候选项目时必须让用户进一步指定项目，不要猜。
 
-技术栈：
-前端：Vue.js、React、TypeScript、Next.js
-后端：Python、Java、Spring Boot、Node.js
-数据/AI：MySQL、Redis、PyTorch、计算机视觉
-工具：Git、Docker、Linux、Vercel
-
-你可以使用工具读取项目列表、指定项目详情和作者主页配置。
-用户询问项目总览、项目列表、项目技术栈、GitHub 链接时，优先调用 get_all_projects。
-用户询问某个具体项目的详细介绍、功能、架构、截图或 README 内容时，优先调用 get_project_detail。
-用户询问作者主页、网站信息、联系方式、社交链接时，优先调用 get_site_content。
-不要编造项目和联系方式；工具没有返回的信息要如实说明。
-
-用友好轻松的语气回答，可用颜文字。鼓励用户留言交流。`
+输出规则：
+- 使用合法 Markdown 输出，可以自然总结，不要机械模板化。
+- 列表和链接要使用标准 Markdown 语法。
+- 禁止输出原始 HTML。`
 
 export async function POST(request: Request) {
 	try {
@@ -423,102 +448,41 @@ export async function POST(request: Request) {
 			)
 		}
 
-		// 6. 在用户消息前添加系统提示词
+		const safeMessages = messages.map((message: ChatMessage) => ({
+			role: message.role,
+			content: message.content
+		}))
+
 		const messagesWithSystem = [
 			{
 				role: 'system',
 				content: SYSTEM_PROMPT
 			},
-			...messages
+			...safeMessages
 		]
+		const userText = getLastUserText(safeMessages)
+		const plannedToolResults = planRequiredTools(userText)
 
 		console.log('Sending request to ARK API:', {
 			model: ARK_MODEL,
 			messageCount: messagesWithSystem.length,
+			plannedToolCount: plannedToolResults.length,
 			clientId: clientId.slice(0, 20) + '...' // 只记录部分 ID
 		})
 
-		// 7. 先发起一次非流式请求，让模型决定是否需要调用工具
-		const firstResponse = await fetch(ARK_API_URL, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${ARK_API_KEY}`
-			},
-			body: JSON.stringify({
-				model: ARK_MODEL,
-				messages: messagesWithSystem,
-				tools: AI_TOOLS,
-				tool_choice: 'auto',
-				stream: false
-			})
+		if (plannedToolResults.length > 0) {
+			const response = await streamFinalAnswer(messagesWithSystem, plannedToolResults)
+			return createStreamResponse(response.body)
+		}
+
+		// 6. 没有命中确定事实意图时，恢复为单次直接流式响应，避免额外等待
+		const response = await fetchArk({
+			model: ARK_MODEL,
+			messages: messagesWithSystem,
+			stream: true
 		})
 
-		if (!firstResponse.ok) {
-			const errorText = await firstResponse.text()
-			console.error('ARK API Error:', {
-				status: firstResponse.status,
-				statusText: firstResponse.statusText,
-				body: errorText
-			})
-			return NextResponse.json(
-				{ error: `AI 服务请求失败: ${firstResponse.statusText}` },
-				{ status: firstResponse.status }
-			)
-		}
-
-		const firstResult = await firstResponse.json()
-		const assistantMessage = firstResult.choices?.[0]?.message
-		const toolCalls = assistantMessage?.tool_calls as ToolCall[] | undefined
-
-		if (!toolCalls || toolCalls.length === 0) {
-			return createStreamResponse(createTextStream(getAssistantText(assistantMessage)))
-		}
-
-		const messagesWithToolResults = [
-			...messagesWithSystem,
-			{
-				role: 'assistant',
-				content: assistantMessage.content || '',
-				tool_calls: toolCalls
-			},
-			...toolCalls.map(toolCall => ({
-				role: 'tool',
-				tool_call_id: toolCall.id,
-				name: toolCall.function.name,
-				content: JSON.stringify(executeToolCall(toolCall))
-			}))
-		]
-
-		// 8. 工具调用完成后，再流式生成最终回复
-		const finalResponse = await fetch(ARK_API_URL, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${ARK_API_KEY}`
-			},
-			body: JSON.stringify({
-				model: ARK_MODEL,
-				messages: messagesWithToolResults,
-				stream: true
-			})
-		})
-
-		if (!finalResponse.ok) {
-			const errorText = await finalResponse.text()
-			console.error('ARK API Error:', {
-				status: finalResponse.status,
-				statusText: finalResponse.statusText,
-				body: errorText
-			})
-			return NextResponse.json(
-				{ error: `AI 服务请求失败: ${finalResponse.statusText}` },
-				{ status: finalResponse.status }
-			)
-		}
-
-		// 9. 返回流式响应
-		return createStreamResponse(finalResponse.body)
+		return createStreamResponse(response.body)
 	} catch (error: any) {
 		console.error('AI Chat Error:', error)
 		return NextResponse.json(

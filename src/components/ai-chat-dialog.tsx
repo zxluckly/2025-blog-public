@@ -4,10 +4,12 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { X, Send, Mic, Loader2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
+import { AIMarkdownMessage } from '@/components/ai-markdown-message'
 
 interface Message {
 	role: 'user' | 'assistant'
 	content: string | Array<{ type: 'text' | 'image_url'; text?: string; image_url?: { url: string } }>
+	isStreaming?: boolean
 }
 
 interface AIChatDialogProps {
@@ -263,18 +265,18 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 
 			if (!response.ok) {
 				const error = await response.json()
-				
+
 				// 处理速率限制错误
 				if (response.status === 429) {
 					const retryAfter = error.retryAfter || 60
 					throw new Error(`${error.error || '请求过于频繁'}，请 ${retryAfter} 秒后再试`)
 				}
-				
+
 				// 处理来源验证错误
 				if (response.status === 403) {
 					throw new Error('请求被拒绝，请刷新页面后重试')
 				}
-				
+
 				throw new Error(error.error || '请求失败')
 			}
 
@@ -282,44 +284,63 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 			const reader = response.body?.getReader()
 			const decoder = new TextDecoder()
 			let assistantMessage = ''
+			let sseBuffer = ''
+			const assistantIndex = newMessages.length
 
 			// 添加空的助手消息
-			setMessages(prev => [...prev, { role: 'assistant', content: '' }])
+			setMessages(prev => [...prev, { role: 'assistant', content: '', isStreaming: true }])
+
+			const updateAssistantMessage = (content: string, isStreaming: boolean) => {
+				setMessages(prev => {
+					const newMsgs = [...prev]
+					newMsgs[assistantIndex] = {
+						role: 'assistant',
+						content,
+						isStreaming
+					}
+					return newMsgs
+				})
+			}
+
+			const processSseLine = (line: string) => {
+				if (!line.startsWith('data: ')) return
+
+				const data = line.slice(6).trim()
+				if (!data || data === '[DONE]') return
+
+				try {
+					const parsed = JSON.parse(data)
+					const content = parsed.choices?.[0]?.delta?.content
+					if (content) {
+						assistantMessage += content
+						updateAssistantMessage(assistantMessage, true)
+					}
+				} catch (e) {
+					console.warn('忽略无效 SSE 数据:', e)
+				}
+			}
 
 			if (reader) {
 				while (true) {
 					const { done, value } = await reader.read()
 					if (done) break
 
-					const chunk = decoder.decode(value)
-					const lines = chunk.split('\n')
+					sseBuffer += decoder.decode(value, { stream: true })
+					const lines = sseBuffer.split('\n')
+					sseBuffer = lines.pop() || ''
 
 					for (const line of lines) {
-						if (line.startsWith('data: ')) {
-							const data = line.slice(6)
-							if (data === '[DONE]') continue
-
-							try {
-								const parsed = JSON.parse(data)
-								const content = parsed.choices?.[0]?.delta?.content
-								if (content) {
-									assistantMessage += content
-									setMessages(prev => {
-										const newMsgs = [...prev]
-										newMsgs[newMsgs.length - 1] = {
-											role: 'assistant',
-											content: assistantMessage
-										}
-										return newMsgs
-									})
-								}
-							} catch (e) {
-								// 忽略解析错误
-							}
-						}
+						processSseLine(line.trimEnd())
 					}
 				}
+
+				sseBuffer += decoder.decode()
+				if (sseBuffer.trim()) {
+					processSseLine(sseBuffer.trimEnd())
+				}
 			}
+
+			updateAssistantMessage(assistantMessage, false)
 		} catch (error: any) {
 			console.error('AI Chat Error:', error)
 			toast.error(error.message || '发送失败，请稍后重试')
@@ -337,7 +358,13 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 		}
 	}
 
-	const renderMessageContent = (content: Message['content']) => {
+	const renderMessageContent = (msg: Message) => {
+		const { content } = msg
+
+		if (msg.role === 'assistant' && typeof content === 'string') {
+			return <AIMarkdownMessage content={content} isStreaming={msg.isStreaming} />
+		}
+
 		if (typeof content === 'string') {
 			return <p className='whitespace-pre-wrap'>{content}</p>
 		}
@@ -437,7 +464,7 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 												: 'bg-white/60 border'
 										}`}
 									>
-										{renderMessageContent(msg.content)}
+										{renderMessageContent(msg)}
 									</div>
 								</div>
 							))}
