@@ -1,20 +1,22 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, type CSSProperties } from 'react'
 import { motion } from 'motion/react'
 import TopSVG from '@/svgs/top.svg'
 import { cn } from '@/lib/utils'
 
 type ScrollTopButtonProps = {
 	className?: string
+	style?: CSSProperties
 	delay?: number
 }
 
-export function ScrollTopButton({ className, delay }: ScrollTopButtonProps) {
+export function ScrollTopButton({ className, style, delay }: ScrollTopButtonProps) {
 	const [show, setShow] = useState(false)
 	const [active, setActive] = useState(false)
 	useEffect(() => {
-		setTimeout(() => setShow(true), delay || 1000)
+		const timeout = setTimeout(() => setShow(true), delay || 1000)
+		return () => clearTimeout(timeout)
 	}, [delay])
 
 	useEffect(() => {
@@ -26,12 +28,12 @@ export function ScrollTopButton({ className, delay }: ScrollTopButtonProps) {
 		return () => window.removeEventListener('scroll', handleScroll)
 	}, [])
 
-	if (!show || !active) return null
-
 	const handleClick = useCallback(() => {
 		window.scrollTo({ top: 0, behavior: 'smooth' })
 		setTimeout(() => setActive(false), 1000)
 	}, [])
+
+	if (!show || !active) return null
 
 	return (
 		<motion.button
@@ -41,7 +43,8 @@ export function ScrollTopButton({ className, delay }: ScrollTopButtonProps) {
 			whileTap={{ scale: 0.95 }}
 			onClick={handleClick}
 			aria-label='Scroll to top'
-			className={cn('card text-secondary static gap-2 rounded-full p-3 text-sm', className)}>
+			className={cn('card text-secondary static gap-2 rounded-full p-3 text-sm', className)}
+			style={style}>
 			<TopSVG className='w-7' />
 		</motion.button>
 	)

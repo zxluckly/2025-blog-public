@@ -40,12 +40,7 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	// 建议问题
-	const suggestedQuestions = [
-		'介绍一下这个网站',
-		'作者的技术栈有哪些？',
-		'这个网站有什么特色功能？',
-		'如何联系作者？'
-	]
+	const suggestedQuestions = ['介绍一下这个网站', '作者的技术栈有哪些？', '这个网站有什么特色功能？', '如何联系作者？']
 
 	const scrollToBottom = () => {
 		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -61,7 +56,7 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 
 		// 检查浏览器是否支持语音识别
 		const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-		
+
 		if (!SpeechRecognition) {
 			console.log('浏览器不支持语音识别')
 			return
@@ -78,7 +73,7 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 				.map((result: any) => result[0])
 				.map((result: any) => result.transcript)
 				.join('')
-			
+
 			setInput(transcript)
 		}
 
@@ -141,7 +136,7 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 	const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.8): Promise<string> => {
 		return new Promise((resolve, reject) => {
 			const reader = new FileReader()
-			reader.onload = (e) => {
+			reader.onload = e => {
 				const img = new Image()
 				img.onload = () => {
 					const canvas = document.createElement('canvas')
@@ -164,7 +159,7 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 					}
 
 					ctx.drawImage(img, 0, 0, width, height)
-					
+
 					// 转换为 base64，使用 JPEG 格式压缩
 					const compressed = canvas.toDataURL('image/jpeg', quality)
 					resolve(compressed)
@@ -197,11 +192,11 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 			toast.info('正在压缩图片...')
 			// 压缩图片到 800px 宽度，质量 0.7
 			const compressed = await compressImage(file, 800, 0.7)
-			
+
 			// 检查压缩后的大小
-			const compressedSize = compressed.length * 0.75 / 1024 // 估算 KB
+			const compressedSize = (compressed.length * 0.75) / 1024 // 估算 KB
 			console.log(`图片压缩: ${(file.size / 1024).toFixed(1)}KB -> ${compressedSize.toFixed(1)}KB`)
-			
+
 			setImageBase64(compressed)
 			setImagePreview(compressed)
 			toast.success('图片上传成功')
@@ -232,14 +227,14 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 		}
 
 		if (imageBase64) {
-			(userMessage.content as any[]).push({
+			;(userMessage.content as any[]).push({
 				type: 'image_url',
 				image_url: { url: imageBase64 }
 			})
 		}
 
 		if (input.trim()) {
-			(userMessage.content as any[]).push({
+			;(userMessage.content as any[]).push({
 				type: 'text',
 				text: input.trim()
 			})
@@ -373,17 +368,14 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 			<div className='space-y-2'>
 				{content.map((item, index) => {
 					if (item.type === 'text') {
-						return <p key={index} className='whitespace-pre-wrap'>{item.text}</p>
+						return (
+							<p key={index} className='whitespace-pre-wrap'>
+								{item.text}
+							</p>
+						)
 					}
 					if (item.type === 'image_url' && item.image_url) {
-						return (
-							<img
-								key={index}
-								src={item.image_url.url}
-								alt='用户上传'
-								className='max-w-xs rounded-lg'
-							/>
-						)
+						return <img key={index} src={item.image_url.url} alt='用户上传' className='max-w-xs rounded-lg' />
 					}
 					return null
 				})}
@@ -409,21 +401,17 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 						initial={{ opacity: 0, scale: 0.95, y: 20 }}
 						animate={{ opacity: 1, scale: 1, y: 0 }}
 						exit={{ opacity: 0, scale: 0.95, y: 20 }}
-						className='card-rounded bg-card fixed left-1/2 top-1/2 z-50 flex h-[600px] w-[700px] max-w-[90vw] -translate-x-1/2 -translate-y-1/2 flex-col border shadow-2xl backdrop-blur-sm max-sm:h-[80vh] max-sm:w-[95vw]'
-					>
+						className='card-rounded bg-card fixed top-1/2 left-1/2 z-[51] flex h-[600px] w-[700px] max-w-[90vw] -translate-x-1/2 -translate-y-1/2 flex-col border shadow-2xl backdrop-blur-sm max-sm:h-[80vh] max-sm:w-[95vw]'>
 						{/* 头部 */}
 						<div className='flex items-center justify-between border-b p-4'>
 							<h3 className='text-lg font-semibold'>真寻</h3>
-							<button
-								onClick={onClose}
-								className='text-secondary hover:text-primary transition-colors'
-							>
+							<button onClick={onClose} className='text-secondary hover:text-primary transition-colors'>
 								<X className='h-5 w-5' />
 							</button>
 						</div>
 
 						{/* 消息列表 */}
-						<div className='flex-1 overflow-y-auto p-4 space-y-4'>
+						<div className='flex-1 space-y-4 overflow-y-auto p-4'>
 							{messages.length === 0 && (
 								<div className='text-secondary flex h-full flex-col items-center justify-center text-center'>
 									<div className='space-y-4'>
@@ -432,7 +420,7 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 											<p className='mt-2 text-sm'>可以问我关于这个网站和作者的问题</p>
 											<p className='mt-1 text-sm'>也可以上传图片让我帮你分析哦～</p>
 										</div>
-										
+
 										{/* 建议问题 */}
 										<div className='space-y-2'>
 											<p className='text-xs'>试试这些问题：</p>
@@ -441,8 +429,7 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 													<button
 														key={index}
 														onClick={() => handleQuickQuestion(question)}
-														className='rounded-full border bg-white/60 px-3 py-1 text-xs transition-colors hover:bg-white/80'
-													>
+														className='rounded-full border bg-white/60 px-3 py-1 text-xs transition-colors hover:bg-white/80'>
 														{question}
 													</button>
 												))}
@@ -453,17 +440,8 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 							)}
 
 							{messages.map((msg, index) => (
-								<div
-									key={index}
-									className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-								>
-									<div
-										className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-											msg.role === 'user'
-												? 'bg-brand text-white'
-												: 'bg-white/60 border'
-										}`}
-									>
+								<div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+									<div className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.role === 'user' ? 'bg-brand text-white' : 'border bg-white/60'}`}>
 										{renderMessageContent(msg)}
 									</div>
 								</div>
@@ -473,19 +451,14 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 						</div>
 
 						{/* 输入区域 */}
-						<div className='border-t p-4 space-y-2'>
+						<div className='space-y-2 border-t p-4'>
 							{/* 图片预览 */}
 							{imagePreview && (
 								<div className='relative inline-block'>
-									<img
-										src={imagePreview}
-										alt='预览'
-										className='h-20 w-20 rounded-lg object-cover'
-									/>
+									<img src={imagePreview} alt='预览' className='h-20 w-20 rounded-lg object-cover' />
 									<button
 										onClick={handleRemoveImage}
-										className='absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600'
-									>
+										className='absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600'>
 										<X className='h-4 w-4' />
 									</button>
 								</div>
@@ -493,24 +466,17 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 
 							{/* 工具栏 */}
 							<div className='flex items-center gap-2'>
-								<input
-									ref={fileInputRef}
-									type='file'
-									accept='image/*'
-									onChange={handleImageUpload}
-									className='hidden'
-								/>
+								<input ref={fileInputRef} type='file' accept='image/*' onChange={handleImageUpload} className='hidden' />
 								<motion.button
 									onClick={() => fileInputRef.current?.click()}
 									disabled={isLoading || !!imagePreview}
 									whileHover={{ scale: 1.05 }}
 									whileTap={{ scale: 0.95 }}
 									className='flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white/80 text-gray-600 transition-all hover:border-[var(--color-brand)] hover:bg-white hover:text-[var(--color-brand)] hover:shadow-sm disabled:opacity-50'
-									title='上传图片'
-								>
+									title='上传图片'>
 									<Upload className='h-5 w-5' />
 								</motion.button>
-								
+
 								{recognition && (
 									<motion.button
 										onClick={toggleVoiceRecording}
@@ -519,27 +485,17 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 										whileTap={{ scale: 0.95 }}
 										className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-all disabled:opacity-50 ${
 											isRecording
-												? 'bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/30'
-												: 'bg-white/80 text-gray-600 border-gray-200 hover:border-[var(--color-brand)] hover:bg-white hover:text-[var(--color-brand)] hover:shadow-sm'
+												? 'border-red-500 bg-red-500 text-white shadow-lg shadow-red-500/30'
+												: 'border-gray-200 bg-white/80 text-gray-600 hover:border-[var(--color-brand)] hover:bg-white hover:text-[var(--color-brand)] hover:shadow-sm'
 										}`}
-										title={isRecording ? '停止录音' : '语音输入'}
-									>
-										<motion.div
-											animate={isRecording ? { scale: [1, 1.15, 1] } : {}}
-											transition={{ repeat: Infinity, duration: 1.5 }}
-										>
-											{isRecording ? (
-												<Mic className='h-5 w-5' />
-											) : (
-												<Mic className='h-5 w-5' />
-											)}
+										title={isRecording ? '停止录音' : '语音输入'}>
+										<motion.div animate={isRecording ? { scale: [1, 1.15, 1] } : {}} transition={{ repeat: Infinity, duration: 1.5 }}>
+											{isRecording ? <Mic className='h-5 w-5' /> : <Mic className='h-5 w-5' />}
 										</motion.div>
 									</motion.button>
 								)}
-								
-								<span className='text-secondary flex-1 text-xs'>
-									{imagePreview ? '已选择图片' : ''}
-								</span>
+
+								<span className='text-secondary flex-1 text-xs'>{imagePreview ? '已选择图片' : ''}</span>
 							</div>
 
 							{/* 文本输入和发送 */}
@@ -547,7 +503,7 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 								<textarea
 									ref={textareaRef}
 									value={input}
-									onChange={(e) => setInput(e.target.value)}
+									onChange={e => setInput(e.target.value)}
 									onKeyDown={handleKeyDown}
 									placeholder={isRecording ? '正在识别语音...' : '输入消息... (Shift+Enter 换行)'}
 									rows={2}
@@ -559,14 +515,9 @@ export default function AIChatDialog({ isOpen, onClose }: AIChatDialogProps) {
 									disabled={isLoading || isRecording || (!input.trim() && !imageBase64)}
 									whileHover={{ scale: 1.05 }}
 									whileTap={{ scale: 0.95 }}
-									className='flex w-12 flex-shrink-0 items-center justify-center rounded-lg bg-[var(--color-brand)] text-white shadow-md shadow-[var(--color-brand)]/25 transition-all hover:shadow-lg hover:shadow-[var(--color-brand)]/35 disabled:opacity-40 disabled:shadow-none'
-									title='发送消息'
-								>
-									{isLoading ? (
-										<Loader2 className='h-5 w-5 animate-spin' />
-									) : (
-										<Send className='h-5 w-5' />
-									)}
+									className='flex w-12 flex-shrink-0 items-center justify-center rounded-lg bg-[var(--color-brand)] text-white shadow-[var(--color-brand)]/25 shadow-md transition-all hover:shadow-[var(--color-brand)]/35 hover:shadow-lg disabled:opacity-40 disabled:shadow-none'
+									title='发送消息'>
+									{isLoading ? <Loader2 className='h-5 w-5 animate-spin' /> : <Send className='h-5 w-5' />}
 								</motion.button>
 							</div>
 						</div>

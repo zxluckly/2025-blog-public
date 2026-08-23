@@ -9,8 +9,10 @@ import CreateDialog from './components/create-dialog'
 import AIChatDialog from '@/components/ai-chat-dialog'
 import { pushProjects } from './services/push-projects'
 import { useAuthStore } from '@/hooks/use-auth'
+import { useSize } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { useMusicStore } from '@/stores/music-store'
+import { useAIChatStore } from '@/stores/ai-chat-store'
 import initialList from './list.json'
 import type { ImageItem } from './components/image-upload-dialog'
 
@@ -21,15 +23,18 @@ export default function Page() {
 	const [isSaving, setIsSaving] = useState(false)
 	const [editingProject, setEditingProject] = useState<Project | null>(null)
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-	const [isAIChatOpen, setIsAIChatOpen] = useState(false)
+	const { isOpen: isAIChatOpen, open: openAIChat, close: closeAIChat } = useAIChatStore()
 	const [imageItems, setImageItems] = useState<Map<string, ImageItem>>(new Map())
 	const [detailImageFiles, setDetailImageFiles] = useState<Map<string, File[]>>(new Map())
 	const keyInputRef = useRef<HTMLInputElement>(null)
 
 	const { isAuth, setPrivateKey } = useAuthStore()
-	const { siteContent } = useConfigStore()
+	const { maxSM, init } = useSize()
+	const { cardStyles, siteContent } = useConfigStore()
 	const { isPlaying: isMusicPlaying } = useMusicStore()
 	const hideEditButton = siteContent.hideEditButton ?? false
+	const isMusicDockVisible = init && !maxSM && cardStyles.musicCard?.enabled !== false && isMusicPlaying
+	const aiBottom = isMusicDockVisible ? '120px' : '32px'
 
 	const handleUpdate = (updatedProject: Project, oldProject: Project, imageItem?: ImageItem, detailFiles?: File[]) => {
 		setProjects(prev => prev.map(p => (p.name === oldProject.name ? updatedProject : p)))
@@ -205,25 +210,24 @@ export default function Page() {
 			{/* AI 对话按钮 */}
 			<motion.button
 				initial={{ opacity: 0, scale: 0 }}
-				animate={{ 
-					opacity: 1, 
+				animate={{
+					opacity: 1,
 					scale: 1,
-					bottom: isMusicPlaying ? '120px' : '32px'
+					bottom: aiBottom
 				}}
 				transition={{ delay: 0.5 }}
 				whileHover={{ scale: 1.1 }}
 				whileTap={{ scale: 0.9 }}
-				onClick={() => setIsAIChatOpen(true)}
+				onClick={openAIChat}
 				className='bg-brand fixed right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-shadow hover:shadow-xl max-sm:right-6 max-sm:h-12 max-sm:w-12'
 				style={{
-					bottom: isMusicPlaying ? '120px' : '32px'
-				}}
-			>
+					bottom: aiBottom
+				}}>
 				<MessageSquare className='h-6 w-6 max-sm:h-5 max-sm:w-5' />
 			</motion.button>
 
 			{isCreateDialogOpen && <CreateDialog project={editingProject} onClose={() => setIsCreateDialogOpen(false)} onSave={handleSaveProject} />}
-			<AIChatDialog isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} />
+			<AIChatDialog isOpen={isAIChatOpen} onClose={closeAIChat} />
 		</>
 	)
 }

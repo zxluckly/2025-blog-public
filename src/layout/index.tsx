@@ -1,5 +1,6 @@
 'use client'
 import { PropsWithChildren } from 'react'
+import { usePathname } from 'next/navigation'
 import { useCenterInit } from '@/hooks/use-center'
 import BlurredBubblesBackground from './backgrounds/blurred-bubbles'
 import NavCard from '@/components/nav-card'
@@ -9,12 +10,16 @@ import { useSize, useSizeInit } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { ScrollTopButton } from '@/components/scroll-top-button'
 import MusicCard from '@/components/music-card'
+import { useAIChatStore } from '@/stores/ai-chat-store'
 
 export default function Layout({ children }: PropsWithChildren) {
 	useCenterInit()
 	useSizeInit()
 	const { cardStyles, siteContent, regenerateKey } = useConfigStore()
 	const { maxSM, init } = useSize()
+	const pathname = usePathname()
+	const isProjectsPage = pathname === '/projects'
+	const isAIChatOpen = useAIChatStore(state => state.isOpen)
 
 	const backgroundImages = (siteContent.backgroundImages ?? []) as Array<{ id: string; url: string }>
 	const currentBackgroundImageId = siteContent.currentBackgroundImageId
@@ -59,7 +64,9 @@ export default function Layout({ children }: PropsWithChildren) {
 				{!maxSM && cardStyles.musicCard?.enabled !== false && <MusicCard />}
 			</main>
 
-			{maxSM && init && <ScrollTopButton className='bg-brand/20 fixed right-6 bottom-8 z-50 shadow-md' />}
+			{maxSM && init && !(isProjectsPage && isAIChatOpen) && (
+				<ScrollTopButton className='bg-brand/20 fixed right-6 z-50 shadow-md' style={{ bottom: isProjectsPage ? '92px' : '32px' }} />
+			)}
 		</>
 	)
 }
