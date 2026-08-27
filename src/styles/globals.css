@@ -172,6 +172,15 @@
 	}
 }
 
+@keyframes wave {
+	0%, 60%, 100% {
+		opacity: 0;
+	}
+	30% {
+		opacity: 1;
+	}
+}
+
 .heartbeat-container:hover {
 	.heartbeat {
 		animation: heartbeat-frame 0.8s ease-in-out;

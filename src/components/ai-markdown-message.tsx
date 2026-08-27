@@ -21,7 +21,11 @@ export function AIMarkdownMessage({ content, isStreaming = false }: AIMarkdownMe
 			<div className='ai-chat-markdown prose max-w-none relative'>
 				{renderedContent}
 				{isStreaming && (
-					<span className='inline-block w-2 h-4 ml-1 bg-current animate-pulse align-middle' />
+					<span className='inline-flex gap-1 ml-2 align-middle'>
+						<span className='w-1.5 h-1.5 rounded-full bg-current opacity-0 animate-[wave_1.4s_ease-in-out_infinite]' />
+						<span className='w-1.5 h-1.5 rounded-full bg-current opacity-0 animate-[wave_1.4s_ease-in-out_0.2s_infinite]' />
+						<span className='w-1.5 h-1.5 rounded-full bg-current opacity-0 animate-[wave_1.4s_ease-in-out_0.4s_infinite]' />
+					</span>
 				)}
 			</div>
 		)
@@ -32,7 +36,11 @@ export function AIMarkdownMessage({ content, isStreaming = false }: AIMarkdownMe
 		<p className='whitespace-pre-wrap'>
 			{content}
 			{isStreaming && (
-				<span className='inline-block w-2 h-4 ml-1 bg-current animate-pulse align-middle' />
+				<span className='inline-flex gap-1 ml-2 align-middle'>
+					<span className='w-1.5 h-1.5 rounded-full bg-current opacity-0 animate-[wave_1.4s_ease-in-out_infinite]' />
+					<span className='w-1.5 h-1.5 rounded-full bg-current opacity-0 animate-[wave_1.4s_ease-in-out_0.2s_infinite]' />
+					<span className='w-1.5 h-1.5 rounded-full bg-current opacity-0 animate-[wave_1.4s_ease-in-out_0.4s_infinite]' />
+				</span>
 			)}
 		</p>
 	)
